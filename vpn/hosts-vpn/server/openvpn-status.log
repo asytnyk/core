@@ -1,0 +1,10 @@
+OpenVPN CLIENT LIST
+Updated,Mon Feb 26 14:12:19 2018
+Common Name,Real Address,Bytes Received,Bytes Sent,Connected Since
+000-000-000.pool.iwe.cloud,82.136.68.189:32978,8753,8142,Mon Feb 26 13:50:30 2018
+ROUTING TABLE
+Virtual Address,Common Name,Real Address,Last Ref
+10.8.0.2,000-000-000.pool.iwe.cloud,82.136.68.189:32978,Mon Feb 26 13:50:31 2018
+GLOBAL STATS
+Max bcast/mcast queue length,0
+END
