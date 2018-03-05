@@ -8,6 +8,11 @@ config = ConfigParser.ConfigParser()
 config.read("backend.conf")
 db_file = config.get("db", "file")
 
+# Needs to be check before sqlite3.connect()
+if os.path.isfile(db_file):
+    print "DB file: " + db_file + " exists. Exiting"
+    exit()
+
 db = sqlite3.connect(db_file)
 
 create_db_string = """
@@ -73,14 +78,13 @@ CREATE TABLE "server" (
 
 def main():
     """ good old main """
-    if os.path.isfile(db_file):
-        print "DB file: " + db_file + " exists. Exiting"
-        return
 
     c = db.cursor()
     c.executescript(create_db_string)
     db.commit()
     db.close()
+
+    print "DB created"
 
 if __name__ == "__main__":
     main()
