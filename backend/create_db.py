@@ -65,27 +65,27 @@ CREATE TABLE "customer" (
     `password` TEXT NOT NULL,
     `registration_date` INTEGER NOT NULL,
     `last_login` INTEGER,
-    `email` TEXT,
+    `email_uuid` TEXT,
     `real_name` TEXT,
-    `address_id` INTEGER,
-    `phone_id` INTEGER,
-    FOREIGN KEY(email) references email(email),
-    FOREIGN KEY(address_id) references address(address_id),
-    FOREIGN KEY(phone_id) references phone(phone_id) );
+    `address_uuid` INTEGER,
+    `phone_uuid` INTEGER,
+    FOREIGN KEY(email_uuid) references email(email_uuid),
+    FOREIGN KEY(address_uuid) references address(address_uuid),
+    FOREIGN KEY(phone_uuid) references phone(phone_uuid) );
 
 CREATE TABLE "server" (
     `server_id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     `server_uuid` TEXT NOT NULL UNIQUE,
-    `customer_id` INTEGER,
-    `address_id` INTEGER,
+    `customer_uuid` INTEGER,
+    `address_uuid` INTEGER,
     `activation_uuid` TEXT,
-    `ssh_key_id` INTEGER,
-    `vpn_key_id` INTEGER,
-    FOREIGN KEY(customer_id) references customer(customer_id),
-    FOREIGN KEY(address_id) references address(address_id),
+    `ssh_key_uuid` INTEGER,
+    `vpn_key_uuid` INTEGER,
+    FOREIGN KEY(customer_uuid) references customer(customer_uuid),
+    FOREIGN KEY(address_uuid) references address(address_uuid),
     FOREIGN KEY(activation_uuid) references activation(activation_uuid),
-    FOREIGN KEY(ssh_key_id) references ssh_key(ssh_key_id),
-    FOREIGN KEY(vpn_key_id) references ssh_key(vpn_key_id) );
+    FOREIGN KEY(ssh_key_uuid) references ssh_key(ssh_key_uuid),
+    FOREIGN KEY(vpn_key_uuid) references ssh_key(vpn_key_uuid) );
 """
 
 def main():
