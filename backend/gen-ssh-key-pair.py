@@ -16,7 +16,7 @@ ADD_SSH_KEY_QUERY = """
     INSERT INTO ssh_key(ssh_key_uuid, pub, priv) VALUES (?,?,?)
 """
 
-def main():
+def gen_keys():
     ssh_key_uuid = str(uuid.uuid4())
 
     chars = string.ascii_uppercase + string.ascii_lowercase + string.digits;
@@ -38,47 +38,10 @@ def main():
     db.commit()
     db.close()
 
-    print "ssh_key_uuid: " + ssh_key_uuid
+    return ssh_key_uuid
 
-#    try:
-#        activated = c.fetchone()[0]
-#    except TypeError:
-#        print activation_uuid + " is not valid"
-#        sys.exit()
-
-    #print private_key + "\n"
-    #print public_key
-
-#    username = raw_input("Username: ")
-#    hashed_pass = hashlib.sha256(getpass()).hexdigest()
-
-#    if not check_login(username, hashed_pass):
-#        print "Login failed"
-#        db.close()
-#        sys.exit()
-
-#    print "Logged in"
-
-#    activation_uuid = raw_input("Activation id: ")
-
-#    time_in_secs = int(time.time())
-
-#    c = db.cursor()
-#    c.execute(CHECK_ACTIVATION_QUERY, (activation_uuid,))
-#    try:
-#        activated = c.fetchone()[0]
-#    except TypeError:
-#        print activation_uuid + " is not valid"
-#        sys.exit()
-
-#    if activated:
-#        print activation_uuid + " is already active."
-#        sys.exit()
-
-#    c.execute(UPDATE_ACTIVATION_QUERY, (time_in_secs, activation_uuid))
-
-
-    #print myuuid
+def main():
+    print "ssh_key_uuid: " + gen_keys()
 
 if __name__ == "__main__":
     main()
