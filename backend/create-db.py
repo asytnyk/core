@@ -52,6 +52,7 @@ CREATE TABLE "ssh_key" (
 CREATE TABLE "vpn_key" (
     `vpn_key_id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     `vpn_key_uuid` TEXT NOT NULL UNIQUE,
+    `white_listed` INTEGER NOT NULL,
     `crt` TEXT NOT NULL,
     `key` TEXT NOT NULL );
 

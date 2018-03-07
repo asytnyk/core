@@ -15,8 +15,9 @@ db_file = config.get("db", "file")
 
 db = sqlite3.connect(db_file)
 
+# white_listed logs if the key was added to the vpn_server white list
 ADD_VPN_KEY_QUERY = """
-    INSERT INTO vpn_key(vpn_key_uuid, crt, key) VALUES (?,?,?)
+    INSERT INTO vpn_key(vpn_key_uuid, crt, key, white_listed) VALUES (?,?,?,0)
 """
 
 def main():
