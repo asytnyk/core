@@ -22,8 +22,7 @@ ADD_VPN_KEY_QUERY = """
     INSERT INTO vpn_key(vpn_key_uuid, crt, key, revoked, srv_blocked, srv_registered) VALUES
     (?,?,?,0,0,0)
 """
-
-def main():
+def gen_keys():
     vpn_key_uuid = str(uuid.uuid4())
 
     # using vpn_key_uuid as the commonName
@@ -43,7 +42,10 @@ def main():
     db.commit()
     db.close()
 
-    print "vpn_key_uuid: " + str(vpn_key_uuid)
+    return vpn_key_uuid
+
+def main():
+    print "vpn_key_uuid: " + gen_keys()
 
 if __name__ == "__main__":
     main()
