@@ -12,12 +12,8 @@ db_file = config.get("db", "file")
 
 db = sqlite3.connect(db_file)
 
-UPDATE_ACTIVATION_QUERY = """
-    UPDATE activation SET activation_date = ?, active = 1 WHERE activation_uuid = ?
-"""
-
-CHECK_ACTIVATION_QUERY = """
-    SELECT active FROM activation WHERE activation_uuid = ?
+ADD_SSH_KEY_QUERY = """
+    INSERT INTO ssh_key(pub, priv) VALUES (?,?)
 """
 
 def main():
@@ -35,8 +31,22 @@ def main():
         public_key = myfile.read()
     os.remove(filename + '.pub')
 
-    print private_key + "\n"
-    print public_key
+    c = db.cursor()
+    c.execute(ADD_SSH_KEY_QUERY, (public_key, private_key))
+
+    ssh_key_id = c.lastrowid
+    db.commit()
+    print "ssh_key_id: " + str(ssh_key_id)
+    db.close()
+
+#    try:
+#        activated = c.fetchone()[0]
+#    except TypeError:
+#        print activation_uuid + " is not valid"
+#        sys.exit()
+
+    #print private_key + "\n"
+    #print public_key
 
 #    username = raw_input("Username: ")
 #    hashed_pass = hashlib.sha256(getpass()).hexdigest()
@@ -66,8 +76,6 @@ def main():
 
 #    c.execute(UPDATE_ACTIVATION_QUERY, (time_in_secs, activation_uuid))
 
-#    db.commit()
-#    db.close()
 
     #print myuuid
 
