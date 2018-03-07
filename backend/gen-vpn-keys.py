@@ -15,9 +15,12 @@ db_file = config.get("db", "file")
 
 db = sqlite3.connect(db_file)
 
-# white_listed logs if the key was added to the vpn_server white list
+# revoked refers to the certificate
+# srv_blocked refers to openvpn server not allowing this certificate to connect, usually temporarily
+# srv_registered refers to the server database containing the certificate on the white_list
 ADD_VPN_KEY_QUERY = """
-    INSERT INTO vpn_key(vpn_key_uuid, crt, key, white_listed) VALUES (?,?,?,0)
+    INSERT INTO vpn_key(vpn_key_uuid, crt, key, revoked, srv_blocked, srv_registered) VALUES
+    (?,?,?,0,0,0)
 """
 
 def main():
