@@ -25,7 +25,7 @@ def check_login(username, hashed_pass):
     """
 
     UPDATE_LAST_LOGIN_QUERY = """
-    UPDATE customer SET "last-login" = ? WHERE username = ?
+    UPDATE customer SET "last_login" = ? WHERE username = ?
     """
 
     c = db.cursor()
