@@ -26,6 +26,7 @@ def main():
     hashed_pass = hashlib.sha256(getpass()).hexdigest()
 
     c = db.cursor()
+    c.execute("PRAGMA foreign_keys=ON");
     c.execute(USER_ADD_QUERY, (customer_uuid, username, hashed_pass, time_in_secs))
 
     db.commit()
