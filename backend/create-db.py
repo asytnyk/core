@@ -17,11 +17,11 @@ db = sqlite3.connect(db_file)
 
 create_db_string = """
 CREATE TABLE "activation" (
+    `activation_id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     `activation_uuid` TEXT NOT NULL UNIQUE,
     `activation_request_date` INTEGER NOT NULL,
     `activation_date` INTEGER,
-    `active` INTEGER,
-    PRIMARY KEY(`activation_uuid`) );
+    `active` INTEGER );
 
 CREATE TABLE "address" (
     `address_id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -32,8 +32,9 @@ CREATE TABLE "address" (
     `country` TEXT NOT NULL );
 
 CREATE TABLE `email` (
+    `email_id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     `email` TEXT NOT NULL UNIQUE,
-    `confirmed` INTEGER, PRIMARY KEY(`email`) );
+    `confirmed` INTEGER );
 
 CREATE TABLE "phone" (
     `phone_id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -53,9 +54,10 @@ CREATE TABLE "customer" (
     `customer_id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     `username` TEXT NOT NULL UNIQUE,
     `password` TEXT NOT NULL,
-    `registration-date` INTEGER NOT NULL,
-    `last-login` INTEGER,
+    `registration_date` INTEGER NOT NULL,
+    `last_login` INTEGER,
     `email` TEXT,
+    `real_name` TEXT,
     `address_id` INTEGER,
     `phone_id` INTEGER,
     FOREIGN KEY(email) references email(email),

@@ -12,7 +12,7 @@ db_file = config.get("db", "file")
 db = sqlite3.connect(db_file)
 
 USER_ADD_QUERY = """
-    INSERT INTO customer(username, password, "registration-date") values (?, ?, ?)
+    INSERT INTO customer(username, password, "registration_date") values (?, ?, ?)
 """
 
 def main():
