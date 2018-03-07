@@ -76,16 +76,11 @@ CREATE TABLE "customer" (
 CREATE TABLE "server" (
     `server_id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     `server_uuid` TEXT NOT NULL UNIQUE,
-    `customer_uuid` INTEGER,
-    `address_uuid` INTEGER,
-    `activation_uuid` TEXT,
-    `ssh_key_uuid` INTEGER,
-    `vpn_key_uuid` INTEGER,
-    FOREIGN KEY(customer_uuid) references customer(customer_uuid),
-    FOREIGN KEY(address_uuid) references address(address_uuid),
-    FOREIGN KEY(activation_uuid) references activation(activation_uuid),
-    FOREIGN KEY(ssh_key_uuid) references ssh_key(ssh_key_uuid),
-    FOREIGN KEY(vpn_key_uuid) references ssh_key(vpn_key_uuid) );
+    `customer_uuid` INTEGER NOT NULL REFERENCES customer(customer_uuid),
+    `address_uuid` INTEGER REFERENCES address(address_uuid),
+    `activation_uuid` TEXT NOT NULL REFERENCES activation(activation_uuid),
+    `ssh_key_uuid` INTEGER NOT NULL REFERENCES ssh_key(ssh_key_uuid),
+    `vpn_key_uuid` INTEGER NOT NULL REFERENCES vpn_key(vpn_key_uuid) );
 """
 
 def main():
