@@ -1,0 +1,74 @@
+Every key is identified by an id
+
+Given the vpn key is valid, VPN server checks for the id at connection request
+	- If activation happened, connection is allowed
+	- Otherwise connection refused
+
+Activation process:
+	- generates the ssh key pair
+	- maps ids of: vpn key, ssh key, server, customer
+	- add vpn key id to the vpn server allow list
+
+The flow:
+	- Install OS
+	- Installer request an activation ID
+	- Installer displays the activation ID
+	- User goes trough activation process online
+	- Completing the activation triggers generation of ssh key and vpn key in the form of RPM packages
+	- Installer downloads ssh key rpm and vpn key rpm
+	- Installer installs the rpm packages and completes installation
+
+
+0-generate-activation-id.py
+	uuidgen
+	db: add uuid,date
+
+1-activate.py
+	db: customer
+	db: server
+	db: activation-id
+	db: vpn-key
+	db: ssh-key
+
+1a-generate-vpn-key.py
+1b-generate-ssh-key.py
+
+
+DB:
+	activation
+		uuid: string unique
+		creation date:
+		activation date:
+	email
+		id: unique
+		confirmed: bool
+	address
+		...
+		confirmed: bool
+	phone number
+		...
+		confirmed: bool
+	customer
+		id: unique
+		email:
+		username / openid
+		password / openid
+		address:
+		phone number:
+		registration date
+		last login
+	ssh-key
+		id: unique
+		pub
+		priv
+	vpn-client-key
+		id: unique
+		crt
+		key
+		
+	server
+		customer
+		address
+		activation
+		vpn-key:
+		ssh-key:
