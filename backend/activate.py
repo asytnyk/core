@@ -4,6 +4,8 @@
 
 import ConfigParser, sqlite3, time, uuid, hashlib, sys
 from getpass import getpass
+import gen_ssh_key_pair, gen_vpn_keys
+
 
 config = ConfigParser.ConfigParser()
 config.read("backend.conf")
@@ -41,23 +43,30 @@ def check_login(username, hashed_pass):
     c.execute(UPDATE_LAST_LOGIN_QUERY, (time_in_secs, username))
     db.commit()
 
-    return 1
+    c.execute(""" SELECT customer_uuid from CUSTOMER where username = ?""", (username,));
+    customer_uuid = c.fetchone()[0]
+
+    return customer_uuid
 
 
 def main():
-    
+    """ Activation maps customer, server, ssh_hey, vpn_key, and the activation itself. It
+    should also whitelist the vpn_key so connections will be allowed on the vpn server. """
+
+    # login
     username = raw_input("Username: ")
     hashed_pass = hashlib.sha256(getpass()).hexdigest()
 
-    if not check_login(username, hashed_pass):
+    customer_uuid = check_login(username, hashed_pass)
+    if not customer_uuid:
         print "Login failed"
         db.close()
         sys.exit()
 
-    print "Logged in"
+    print "Logged in " + str(customer_uuid)
 
+    # Check for Activation id
     activation_uuid = raw_input("Activation id: ")
-
     time_in_secs = int(time.time())
 
     c = db.cursor()
@@ -70,11 +79,25 @@ def main():
 
     if activated:
         print activation_uuid + " is already active."
+        db.close()
         sys.exit()
+    
+    # At this point activation uuid exists and is not active
 
+    # ssh key
+    ssh_key_uuid = gen_ssh_key_pair.gen_keys()
+    print ssh_key_uuid
+
+    # vpn key
+    vpn_key_uuid = gen_vpn_keys.gen_keys()
+    print vpn_key_uuid
+
+    # server
+
+    # Finally mark activation_uuid as active
     c.execute(UPDATE_ACTIVATION_QUERY, (time_in_secs, activation_uuid))
-
     db.commit()
+
     db.close()
 
     #print myuuid
