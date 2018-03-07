@@ -25,6 +25,7 @@ CREATE TABLE "activation" (
 
 CREATE TABLE "address" (
     `address_id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    `address_uuid` TEXT NOT NULL UNIQUE,
     `street` TEXT NOT NULL,
     `city` TEXT NOT NULL,
     `state` TEXT NOT NULL,
@@ -33,25 +34,30 @@ CREATE TABLE "address" (
 
 CREATE TABLE `email` (
     `email_id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    `email_uuid` TEXT NOT NULL UNIQUE,
     `email` TEXT NOT NULL UNIQUE,
     `confirmed` INTEGER );
 
 CREATE TABLE "phone" (
     `phone_id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    `phone_uuid` TEXT NOT NULL UNIQUE,
     `phone` TEXT NOT NULL );
 
 CREATE TABLE "ssh_key" (
     `ssh_key_id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    `ssh_key_uuid` TEXT NOT NULL UNIQUE,
     `pub` TEXT NOT NULL,
     `priv` TEXT NOT NULL );
 
 CREATE TABLE "vpn_key" (
     `vpn_key_id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    `vpn_key_uuid` TEXT NOT NULL UNIQUE,
     `crt` TEXT NOT NULL,
     `key` TEXT NOT NULL );
 
 CREATE TABLE "customer" (
     `customer_id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    `customer_uuid` TEXT NOT NULL UNIQUE,
     `username` TEXT NOT NULL UNIQUE,
     `password` TEXT NOT NULL,
     `registration_date` INTEGER NOT NULL,
@@ -66,6 +72,7 @@ CREATE TABLE "customer" (
 
 CREATE TABLE "server" (
     `server_id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    `server_uuid` TEXT NOT NULL UNIQUE,
     `customer_id` INTEGER,
     `address_id` INTEGER,
     `activation_uuid` TEXT,

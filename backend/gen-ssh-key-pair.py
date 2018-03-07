@@ -13,10 +13,12 @@ db_file = config.get("db", "file")
 db = sqlite3.connect(db_file)
 
 ADD_SSH_KEY_QUERY = """
-    INSERT INTO ssh_key(pub, priv) VALUES (?,?)
+    INSERT INTO ssh_key(ssh_key_uuid, pub, priv) VALUES (?,?,?)
 """
 
 def main():
+    ssh_key_uuid = str(uuid.uuid4())
+
     chars = string.ascii_uppercase + string.ascii_lowercase + string.digits;
     filename = ''.join(random.SystemRandom().choice(chars) for _ in range(8))
 
@@ -32,12 +34,11 @@ def main():
     os.remove(filename + '.pub')
 
     c = db.cursor()
-    c.execute(ADD_SSH_KEY_QUERY, (public_key, private_key))
-
-    ssh_key_id = c.lastrowid
+    c.execute(ADD_SSH_KEY_QUERY, (ssh_key_uuid, public_key, private_key))
     db.commit()
-    print "ssh_key_id: " + str(ssh_key_id)
     db.close()
+
+    print "ssh_key_uuid: " + ssh_key_uuid
 
 #    try:
 #        activated = c.fetchone()[0]
