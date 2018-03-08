@@ -4,7 +4,7 @@
 
 import ConfigParser, sqlite3, time, uuid, hashlib, sys
 from getpass import getpass
-import gen_ssh_key_pair, gen_vpn_keys
+import gen_ssh_key_pair, gen_vpn_keys, add_server
 
 
 config = ConfigParser.ConfigParser()
@@ -93,6 +93,7 @@ def main():
     print vpn_key_uuid
 
     # server
+    server_uuid = add_server.add_server(customer_uuid, activation_uuid, ssh_key_uuid, vpn_key_uuid)
 
     # Finally mark activation_uuid as active
     c.execute(UPDATE_ACTIVATION_QUERY, (time_in_secs, activation_uuid))
