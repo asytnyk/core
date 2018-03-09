@@ -1,3 +1,4 @@
 *.swp
 backend.sqlite3
 *.pyc
+logs
