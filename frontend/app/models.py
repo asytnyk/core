@@ -43,7 +43,7 @@ class User(UserMixin, db.Model):
         try:
             id = jwt.decode(token, app.config['SECRET_KEY'],
                     algorithms=[app.config['JWT_PASSWORD_TOKEN_ALGO']])['reset_password']
-        except (jwt.exceptions.InvalidTokenError, jwt.exceptions.InvalidKeyError):
+        except:
             return
 
         return User.query.get(id)
