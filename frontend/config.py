@@ -17,3 +17,6 @@ class Config(object):
     ADMINS = ['peter.senna@gmail.com']
 
     POSTS_PER_PAGE = 25
+
+    JWT_PASSWORD_TOKEN_EXPIRES = 600
+    JWT_PASSWORD_TOKEN_ALGO = 'HS256'
