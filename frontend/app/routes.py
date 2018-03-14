@@ -6,7 +6,7 @@ from app.models import User, Post
 from app import app, db
 from app.email import send_password_reset_email
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm
-from app.forms import ResetPasswordRequestForm, ResetPasswordForm
+from app.forms import ResetPasswordRequestForm, ResetPasswordForm, ChangePasswordForm
 import logging
 
 @app.before_request
@@ -193,4 +193,20 @@ def reset_password(token):
         flash('Your password has been reset.')
         return redirect(url_for('login'))
     return render_template('reset_password.html', form=form)
+
+@app.route('/change_password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        if not current_user.check_password(form.current_password.data):
+            flash('Your current password is wrong.')
+            return redirect(url_for('change_password'))
+
+        current_user.set_password(form.password.data)
+        db.session.commit()
+        flash('Your password has been changed.')
+        return redirect(url_for('edit_profile'))
+
+    return render_template('change_password.html', form=form)
 
