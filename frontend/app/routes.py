@@ -1,7 +1,8 @@
-from flask import render_template, flash, redirect, request, url_for
+from flask import render_template, flash, redirect, request, url_for, json, jsonify, Response
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 from datetime import datetime
+from time import time
 from app.models import User, Post
 from app import app, db
 from app.email import send_password_reset_email
@@ -210,3 +211,33 @@ def change_password():
 
     return render_template('change_password.html', form=form)
 
+@app.route('/download_installation_key')
+@login_required
+def download_installation_key():
+    expires = int(time() + app.config['JWT_INSTALLATION_KEY_EXPIRES'])
+    filename = 'iWe-install-key-' + current_user.username + '-' + \
+            str(expires) + '.json'
+    access_token = {
+            'access_token': current_user.get_installation_key_token()
+            }
+
+    body = 'Downloaded installation key '+ current_user.username + '-' + str(expires)
+    post = Post(body=body, author=current_user)
+    db.session.add(post)
+    db.session.commit()
+    flash(body)
+
+    return Response(json.dumps(access_token), mimetype='application/json',
+            headers={'Content-Disposition':'attachment;filename=' + filename})
+
+@app.route('/installation_keys')
+@login_required
+def installation_keys():
+    expire_hours = int(app.config['JWT_INSTALLATION_KEY_EXPIRES'] / 3600)
+    return render_template('installation_keys.html', title='Installation Keys',
+            expire_hours=expire_hours)
+
+@app.route('/activate')
+@login_required
+def activate():
+    return redirect(url_for('installation_keys'))

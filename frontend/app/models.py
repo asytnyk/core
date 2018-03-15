@@ -48,6 +48,21 @@ class User(UserMixin, db.Model):
 
         return User.query.get(id)
 
+    def get_installation_key_token(self, expires_in=app.config['JWT_INSTALLATION_KEY_EXPIRES']):
+        return jwt.encode(
+                {'installation_key': self.id, 'exp': time() + expires_in},
+                app.config['SECRET_KEY'],
+                algorithm=app.config['JWT_PASSWORD_TOKEN_ALGO']).decode('utf-8')
+
+    @staticmethod
+    def verify_installation_key_token(token):
+        try:
+            id = jwt.decode(token, app.config['SECRET_KEY'],
+                    algorithms=[app.config['JWT_PASSWORD_TOKEN_ALGO']])['installation_key']
+        except:
+            return
+
+        return User.query.get(id)
     def avatar(self,size):
         digest = md5(self.email.lower().encode('utf-8')).hexdigest()
         return 'https://www.gravatar.com/avatar/{}?d=identicon&s={}'.format(digest, size)
