@@ -6,14 +6,14 @@ from app.models import User
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=6, max=12)])
     remember_me = BooleanField('Remember Me')
     submit = SubmitField('Sign In')
 
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=6, max=12)])
     password2 = PasswordField('Repeat Password', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Register')
 
@@ -52,14 +52,14 @@ class ResetPasswordRequestForm(FlaskForm):
     submit = SubmitField('Request Password Reset')
 
 class ResetPasswordForm(FlaskForm):
-    password = PasswordField('Password', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=6, max=12)])
     password2 = PasswordField(
-            'Repeat Password', validators=[DataRequired(), EqualTo('password')])
+            'Repeat Password', validators=[DataRequired(), EqualTo('password'), Length(min=6, max=12)])
     submit = SubmitField('Change Password')
 
 class ChangePasswordForm(FlaskForm):
     current_password = PasswordField('Current Password', validators=[DataRequired()])
-    password = PasswordField('New Password', validators=[DataRequired()])
+    password = PasswordField('New Password', validators=[DataRequired(), Length(min=6, max=12)])
     password2 = PasswordField(
-            'Repeat New Password', validators=[DataRequired(), EqualTo('password')])
+            'Repeat New Password', validators=[DataRequired(), EqualTo('password'), Length(min=6, max=12)])
     submit = SubmitField('Change Password')
