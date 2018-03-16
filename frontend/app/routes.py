@@ -218,7 +218,7 @@ def download_installation_key():
     filename = 'iWe-install-key-' + current_user.username + '-' + \
             str(expires) + '.json'
     access_token = {
-            'access_token': current_user.get_installation_key_token()
+            'installation_key': current_user.get_installation_key_token()
             }
 
     body = 'Downloaded installation key '+ current_user.username + '-' + str(expires)
@@ -236,6 +236,22 @@ def installation_keys():
     expire_hours = int(app.config['JWT_INSTALLATION_KEY_EXPIRES'] / 3600)
     return render_template('installation_keys.html', title='Installation Keys',
             expire_hours=expire_hours)
+
+@app.route('/request_activation', methods=['GET', 'POST'])
+def request_activation():
+    if current_user.is_authenticated:
+        return render_template('404.html'), 404
+
+    installation_key = request.headers.get('installation_key')
+    if not installation_key:
+        return render_template('404.html'), 404
+
+    user = User.verify_installation_key_token(installation_key)
+    if not user:
+        return render_template('404.html'), 404
+
+    return ('', 200)
+
 
 @app.route('/activate')
 @login_required
