@@ -136,6 +136,9 @@ class Activation(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     server_id = db.Column(db.Integer, db.ForeignKey('server.id'))
 
+    def get_server(self):
+        return Server.query.filter_by(id=self.server_id).first()
+
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))

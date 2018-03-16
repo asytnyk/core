@@ -264,6 +264,7 @@ def request_activation():
     server = Server(owner=user, facter_json=facter_json)
     db.session.add(server)
     db.session.commit()
+    print (server.facter_json['manufacturer'])
 
     activation = Activation(server_id=server.id, user_id=user.id, activation_pin=randrange(1000, 9999))
     db.session.add(activation)
