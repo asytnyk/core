@@ -5,7 +5,6 @@ from flask import json
 from flask_login import UserMixin
 from hashlib import md5
 import jwt
-import random
 from app import app, db, login
 
 followers = db.Table('followers',
@@ -20,6 +19,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     servers = db.relationship('Server', backref='owner', lazy='dynamic')
+    activations = db.relationship('Activation', backref='server', lazy='dynamic')
 
     about_me = db.Column(db.String(140))
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
@@ -91,11 +91,11 @@ class User(UserMixin, db.Model):
         own = Post.query.filter_by(user_id = self.id)
         return followed.union(own).order_by(Post.timestamp.desc())
 
+    def get_activations(self):
+        return Activation.query.filter_by(user_id = self.id).order_by(Activation.created.desc())
+
     def __repr__(self):
         return '<User {}>'.format(self.username)
-
-    def get_pending_activations(self):
-        return Server.query.filter_by(user_id = self.id, active = None).count()
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -115,33 +115,26 @@ class Vpnkey(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     crt = db.Column(db.String(8192))
     key = db.Column(db.String(4096))
-    revoked = db.Column(db.Boolean)
-    blocked = db.Column(db.Boolean)
+    revoked = db.Column(db.Boolean, default=False)
+    blocked = db.Column(db.Boolean, default=False)
 
 class Server(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     servername = db.Column(db.String(32))
-    activation_str = db.Column(db.String(32))
     facter_json = db.Column(db.JSON())
-    active = db.Column(db.Boolean)
+    active = db.Column(db.Boolean, default=False)
 
     sshkey_id = db.Column(db.Integer, db.ForeignKey('sshkey.id'))
     vpnkey_id = db.Column(db.Integer, db.ForeignKey('vpnkey.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    def request_activation(self, facter_json):
-        if not facter_json:
-            return None
-
-        try:
-            json.dumps(facter_json)
-        except:
-            return None
-
-        self.facter_json = facter_json
-
-        self.activation_str = str(random.randint(1000, 9999))
-        return self.activation_str
+class Activation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    created = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    last_ping = db.Column(db.DateTime, index=True, default=None)
+    activation_pin = db.Column(db.String(32))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    server_id = db.Column(db.Integer, db.ForeignKey('server.id'))
 
 @login.user_loader
 def load_user(id):

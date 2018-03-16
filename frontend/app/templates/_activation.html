@@ -1,0 +1,7 @@
+
+	<table class="table table-hover">
+		<tr>
+			<td>{{ activation.activation_pin }}</td>
+			<td><a href="{{ url_for('activate', activation_pin=activation.activation_pin) }}">activate</a></td>
+		</tr>
+	</table>

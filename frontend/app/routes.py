@@ -3,7 +3,8 @@ from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 from datetime import datetime
 from time import time
-from app.models import User, Post, Server
+from random import randrange
+from app.models import User, Post, Server, Activation
 from app import app, db
 from app.email import send_password_reset_email
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm
@@ -249,24 +250,47 @@ def request_activation():
     user = User.verify_installation_key_token(installation_key)
     if not user:
         return render_template('404.html'), 404
+
     try:
         facter_json = request.get_json()
     except:
         return render_template('404.html'), 404
 
-    server = Server(owner=user)
-    activation_pin = server.request_activation(facter_json)
+    try:
+        json.dumps(facter_json)
+    except:
+        return render_template('404.html'), 404
+
+    server = Server(owner=user, facter_json=facter_json)
     db.session.add(server)
     db.session.commit()
 
+    activation = Activation(server_id=server.id, user_id=user.id, activation_pin=randrange(1000, 9999))
+    db.session.add(activation)
+    db.session.commit()
+
     filename='activation_pin.json'
-    activation_pin_json = {'activation_pin': activation_pin}
+    activation_pin_json = {'activation_pin': activation.activation_pin}
     return Response(json.dumps(activation_pin_json),
             mimetype='application/json',
             headers={'Content-Disposition':'attachment;filename=' + filename})
 
-
-@app.route('/activate')
+@app.route('/activate/', defaults={'activation_pin': None})
+@app.route('/activate/<activation_pin>')
 @login_required
-def activate():
-    return redirect(url_for('installation_keys'))
+def activate(activation_pin):
+    if activation_pin:
+        print (activation_pin)
+
+    page = request.args.get('page', 1, type=int)
+    activations = current_user.get_activations().paginate(
+            page, app.config['POSTS_PER_PAGE'], False)
+
+    next_url = url_for('activate', page=activations.next_num) \
+            if activations.has_next else None
+    prev_url = url_for('activate', page=activations.prev_num) \
+            if activations.has_prev else None
+
+    return render_template('activate.html', title='Activate Your Servers',
+            activations=activations.items, next_url=next_url, prev_url=prev_url)
+
