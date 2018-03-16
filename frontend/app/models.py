@@ -1,9 +1,11 @@
 from datetime import datetime
 from time import time
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask import json
 from flask_login import UserMixin
 from hashlib import md5
 import jwt
+import random
 from app import app, db, login
 
 followers = db.Table('followers',
@@ -17,6 +19,8 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
     posts = db.relationship('Post', backref='author', lazy='dynamic')
+    servers = db.relationship('Server', backref='owner', lazy='dynamic')
+
     about_me = db.Column(db.String(140))
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -63,6 +67,7 @@ class User(UserMixin, db.Model):
             return
 
         return User.query.get(id)
+
     def avatar(self,size):
         digest = md5(self.email.lower().encode('utf-8')).hexdigest()
         return 'https://www.gravatar.com/avatar/{}?d=identicon&s={}'.format(digest, size)
@@ -89,6 +94,9 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return '<User {}>'.format(self.username)
 
+    def get_pending_activations(self):
+        return Server.query.filter_by(user_id = self.id, active = None).count()
+
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String(140))
@@ -97,6 +105,43 @@ class Post(db.Model):
 
     def __repr__(self):
         return '<Post {}>'.format(self.body)
+
+class Sshkey(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    pub = db.Column(db.String(2048))
+    priv = db.Column(db.String(8192))
+
+class Vpnkey(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    crt = db.Column(db.String(8192))
+    key = db.Column(db.String(4096))
+    revoked = db.Column(db.Boolean)
+    blocked = db.Column(db.Boolean)
+
+class Server(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    servername = db.Column(db.String(32))
+    activation_str = db.Column(db.String(32))
+    facter_json = db.Column(db.JSON())
+    active = db.Column(db.Boolean)
+
+    sshkey_id = db.Column(db.Integer, db.ForeignKey('sshkey.id'))
+    vpnkey_id = db.Column(db.Integer, db.ForeignKey('vpnkey.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    def request_activation(self, facter_json):
+        if not facter_json:
+            return None
+
+        try:
+            json.dumps(facter_json)
+        except:
+            return None
+
+        self.facter_json = facter_json
+
+        self.activation_str = str(random.randint(1000, 9999))
+        return self.activation_str
 
 @login.user_loader
 def load_user(id):

@@ -3,7 +3,7 @@ from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 from datetime import datetime
 from time import time
-from app.models import User, Post
+from app.models import User, Post, Server
 from app import app, db
 from app.email import send_password_reset_email
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm
@@ -237,7 +237,7 @@ def installation_keys():
     return render_template('installation_keys.html', title='Installation Keys',
             expire_hours=expire_hours)
 
-@app.route('/request_activation', methods=['GET', 'POST'])
+@app.route('/request_activation_pin', methods=['GET', 'POST'])
 def request_activation():
     if current_user.is_authenticated:
         return render_template('404.html'), 404
@@ -249,8 +249,21 @@ def request_activation():
     user = User.verify_installation_key_token(installation_key)
     if not user:
         return render_template('404.html'), 404
+    try:
+        facter_json = request.get_json()
+    except:
+        return render_template('404.html'), 404
 
-    return ('', 200)
+    server = Server(owner=user)
+    activation_pin = server.request_activation(facter_json)
+    db.session.add(server)
+    db.session.commit()
+
+    filename='activation_pin.json'
+    activation_pin_json = {'activation_pin': activation_pin}
+    return Response(json.dumps(activation_pin_json),
+            mimetype='application/json',
+            headers={'Content-Disposition':'attachment;filename=' + filename})
 
 
 @app.route('/activate')
