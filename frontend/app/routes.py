@@ -212,6 +212,13 @@ def change_password():
 
     return render_template('change_password.html', form=form)
 
+@app.route('/installation_keys')
+@login_required
+def installation_keys():
+    expire_hours = int(app.config['JWT_INSTALLATION_KEY_EXPIRES'] / 3600)
+    return render_template('installation_keys.html', title='Installation Keys',
+            expire_hours=expire_hours)
+
 @app.route('/download_installation_key')
 @login_required
 def download_installation_key():
@@ -219,7 +226,8 @@ def download_installation_key():
     filename = 'iWe-install-key-' + current_user.username + '-' + \
             str(expires) + '.json'
     access_token = {
-            'installation_key': current_user.get_installation_key_token()
+            'installation_key': current_user.get_installation_key_token(),
+            'request_activation_url': url_for('request_activation_pin', _external=True)
             }
 
     body = 'Downloaded installation key '+ current_user.username + '-' + str(expires)
@@ -231,15 +239,8 @@ def download_installation_key():
     return Response(json.dumps(access_token), mimetype='application/json',
             headers={'Content-Disposition':'attachment;filename=' + filename})
 
-@app.route('/installation_keys')
-@login_required
-def installation_keys():
-    expire_hours = int(app.config['JWT_INSTALLATION_KEY_EXPIRES'] / 3600)
-    return render_template('installation_keys.html', title='Installation Keys',
-            expire_hours=expire_hours)
-
 @app.route('/request_activation_pin', methods=['GET', 'POST'])
-def request_activation():
+def request_activation_pin():
     if current_user.is_authenticated:
         return render_template('404.html'), 404
 
@@ -264,7 +265,6 @@ def request_activation():
     server = Server(owner=user, facter_json=facter_json)
     db.session.add(server)
     db.session.commit()
-    print (server.facter_json['manufacturer'])
 
     activation = Activation(server_id=server.id, user_id=user.id, activation_pin=randrange(1000, 9999))
     db.session.add(activation)
