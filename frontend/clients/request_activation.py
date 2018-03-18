@@ -3,6 +3,7 @@
 import simplejson as json
 import argparse
 import os.path
+import requests
 
 def check_file(parser, path):
     if not os.path.isfile(path):
@@ -14,6 +15,16 @@ def check_file(parser, path):
             except:
                 parser.error("The file %s does not seem to be a valid json file!" % path)
 
+# Check https://stackoverflow.com/questions/14393339/convert-this-curl-cmd-to-python-3 for https
+def request_activation_pin(installation_key, facter):
+    url = installation_key['request_activation_url']
+    key = installation_key['installation_key']
+    headers = {'installation_key': key, 'Content-Type': 'application/json'}
+    r = requests.post(url, headers=headers, data=json.dumps(facter))
+    if r.status_code == 200:
+        return r.json()
+    else:
+        return None
 
 def main():
     parser = argparse.ArgumentParser()
@@ -31,8 +42,7 @@ def main():
     with open(args.facter, 'r') as json_file:
         facter = json.load(json_file)
 
-    print(installation_key)
-    print(facter)
+    print (request_activation_pin(installation_key, facter))
 
 if __name__ == "__main__":
     main()
