@@ -2,9 +2,21 @@
 
 {% block app_content %}
 	<h1>Activate Your Servers!</h1>
-	{% for activation in activations %}
-		{% include '_activation.html' %}
-	{% endfor %}
+        <table class="table table-hover">
+                <tr>
+                        <td align="left">pin</td>
+                        <td align="left">date</td>
+                        <td align="left">time</td>
+			<td align="left">manufacturer(productname): serial</td>
+			<td align="left">RAM size</td>
+                        <td align="left">MAC addr</td>
+			<td align="left">activate</td>
+                </tr>
+		{% for activation in activations %}
+			{% include '_activation.html' %}
+		{% endfor %}
+        </table>
+
 	<nav aria-label="...">
 		<ul class="pager">
 			<li class="previous{% if not prev_url %} disabled{% endif %}">
