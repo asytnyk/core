@@ -261,6 +261,8 @@ def request_activation_pin():
         json.dumps(facter_json)
     except:
         return render_template('404.html'), 404
+    if not facter_json:
+        return render_template('404.html'), 404
 
     server = Server(owner=user, facter_json=facter_json)
     db.session.add(server)
@@ -272,6 +274,13 @@ def request_activation_pin():
 
     filename='activation_pin.json'
     activation_pin_json = {'activation_pin': activation.activation_pin}
+
+    body = 'Activation key {} requested by {}({}): {}'.format(activation.activation_pin,
+            facter_json['manufacturer'], facter_json['productname'], facter_json['serialnumber'])
+    post = Post(body=body, author=user)
+    db.session.add(post)
+    db.session.commit()
+
     return Response(json.dumps(activation_pin_json),
             mimetype='application/json',
             headers={'Content-Disposition':'attachment;filename=' + filename})
