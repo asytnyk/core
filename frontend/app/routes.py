@@ -1,7 +1,7 @@
 from flask import render_template, flash, redirect, request, url_for, json, jsonify, Response
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
-from datetime import datetime
+from datetime import datetime, timedelta
 from time import time
 from random import randrange
 from app.models import User, Post, Server, Activation
@@ -320,42 +320,66 @@ def download_server_keys(activation_pin):
                 mimetype='application/json',
                 headers={'Content-Disposition':'attachment;filename=' + filename})
 
+def cleanup_activation_pins(user, older_than_hours):
+    current_time = datetime.utcnow()
+    time_delta = current_time - timedelta(hours=older_than_hours)
 
-@app.route('/activate_pin/', defaults={'activation_pin': None})
-@app.route('/activate_pin/<activation_pin>', methods=['GET', 'POST'])
+    Activation.query.filter(Activation.user_id == user.id, Activation.created < time_delta).delete()
+    db.session.commit()
+
+@app.route('/activation_pins/')
 @login_required
-def activate_pin(activation_pin):
-    if activation_pin:
-        form = ActivatePinForm()
-
-        if form.validate_on_submit():
-            if not current_user.check_password(form.password.data):
-                print ('wrong pw')
-                flash('Wrong password.')
-                return redirect(url_for('activate_pin',activation_pin=activation_pin))
-            print ('good pw')
-
-            activation = Activation.query.filter_by(user_id = current_user.id, activation_pin = activation_pin).first()
-            activation.active = True
-            db.session.commit()
-            flash('Pin {} is now active'.format(activation_pin))
-            return redirect(url_for('activate_pin'))
-        elif request.method == 'GET':
-            form.pin.data = activation_pin
-            return render_template('activate_pin.html', title='Activate Your Server', form=form)
-        else:
-            flash('Password or pin invalid.')
-            return redirect(url_for('activate_pin', activation_pin=activation_pin))
+def activation_pins():
+    
+    cleanup_activation_pins(current_user, 48)
 
     page = request.args.get('page', 1, type=int)
+
     activations = current_user.get_activations().paginate(
             page, app.config['POSTS_PER_PAGE'], False)
 
-    next_url = url_for('activate_pin', page=activations.next_num) \
+    next_url = url_for('activation_pins', page=activations.next_num) \
             if activations.has_next else None
-    prev_url = url_for('activate_pin', page=activations.prev_num) \
+    prev_url = url_for('activation_pins', page=activations.prev_num) \
             if activations.has_prev else None
 
     return render_template('list_activation_pins.html', title='List of Activation Pins',
             activations=activations.items, next_url=next_url, prev_url=prev_url)
 
+@app.route('/activate_pin/<activation_pin>', methods=['GET', 'POST'])
+@login_required
+def activate_pin(activation_pin):
+    activation = Activation.query.filter_by(user_id = current_user.id, activation_pin = activation_pin).first()
+    if not activation:
+        flash('Invalid Pin')
+        return redirect(url_for('activation_pins'))
+
+    if activation.active:
+        flash('Pin is already active')
+        return redirect(url_for('activation_pins'))
+
+
+    form = ActivatePinForm()
+    if form.validate_on_submit():
+        if not current_user.check_password(form.password.data):
+            print ('wrong pw')
+            flash('Wrong password.')
+            return redirect(url_for('activate_pin',activation_pin=activation_pin))
+
+        activation.active = True
+        db.session.commit()
+        flash('Pin {} is now active'.format(activation_pin))
+
+        body = 'Pin {} activated'.format(activation.activation_pin)
+        post = Post(body=body, author=current_user)
+        db.session.add(post)
+        db.session.commit()
+
+        return redirect(url_for('activation_pins'))
+
+    elif request.method == 'GET':
+        form.pin.data = activation_pin
+        return render_template('activate_pin.html', title='Activate Your Server', form=form)
+    else:
+        flash('Password or pin invalid.')
+        return redirect(url_for('activate_pin', activation_pin=activation_pin))

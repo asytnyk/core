@@ -7,5 +7,9 @@
 			    {{ activation.get_server().facter_json['serialnumber'] }}</td>
 			<td align="left">{{ activation.get_server().facter_json['memorysize'] }}</td>
 			<td align="left">{{ activation.get_server().facter_json['macaddress'] }}</td>
+			{% if activation.active %}
+			<td align="left">active</a></td>
+			{% else %}
 			<td align="left"><a href="{{ url_for('activate_pin', activation_pin=activation.activation_pin) }}">activate pin</a></td>
+			{% endif %}
 		</tr>
