@@ -131,6 +131,7 @@ class Server(db.Model):
 class Activation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    active = db.Column(db.Boolean, index=True, default=False)
     last_ping = db.Column(db.DateTime, index=True, default=None)
     activation_pin = db.Column(db.String(32))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
