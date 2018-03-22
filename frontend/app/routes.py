@@ -11,6 +11,8 @@ from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm
 from app.forms import ResetPasswordRequestForm, ResetPasswordForm, ChangePasswordForm
 import logging
 
+HTTP_204_NO_CONTENT = 204
+
 @app.before_request
 def before_request():
     if current_user.is_authenticated:
@@ -273,10 +275,13 @@ def request_activation_pin():
     db.session.commit()
 
     filename='download_keys_url.json'
-    activation_pin_json = {'download_keys_url': url_for(download_server_keys,
-        activation_key=activation.activation_pin)}
+    download_keys_url = url_for('download_server_keys', activation_pin=activation.activation_pin, _external=True)
+    activate_pin_url = url_for('activate_pin', activation_pin=activation.activation_pin, _external=True)
+    activation_pin_json = {'activation_pin':activation.activation_pin,\
+                           'download_keys_url': download_keys_url,\
+                           'activate_pin_url': activate_pin_url}
 
-    body = 'Activation key {} requested by {}({}): {}'.format(activation.activation_pin,
+    body = 'Activation pin {} requested by {}({}): {}'.format(activation.activation_pin,
             facter_json['manufacturer'], facter_json['productname'], facter_json['serialnumber'])
     post = Post(body=body, author=user)
     db.session.add(post)
@@ -286,9 +291,8 @@ def request_activation_pin():
             mimetype='application/json',
             headers={'Content-Disposition':'attachment;filename=' + filename})
 
-
-@app.route('/download_server_keys/<activation_key>')
-def download_server_keys(activation_key):
+@app.route('/download_server_keys/<activation_pin>')
+def download_server_keys(activation_pin):
 
     if current_user.is_authenticated:
         return render_template('404.html'), 404
@@ -306,13 +310,13 @@ def download_server_keys(activation_key):
         return render_template('404.html'), 404
 
     if activation.active == False:
-        return Response('not active yet')
+        return '', HTTP_204_NO_CONTENT
 
 
-@app.route('/activate/', defaults={'activation_pin': None})
-@app.route('/activate/<activation_pin>')
+@app.route('/activate_pin/', defaults={'activation_pin': None})
+@app.route('/activate_pin/<activation_pin>')
 @login_required
-def activate(activation_pin):
+def activate_pin(activation_pin):
     if activation_pin:
         print (activation_pin)
 
@@ -320,9 +324,9 @@ def activate(activation_pin):
     activations = current_user.get_activations().paginate(
             page, app.config['POSTS_PER_PAGE'], False)
 
-    next_url = url_for('activate', page=activations.next_num) \
+    next_url = url_for('activate_pin', page=activations.next_num) \
             if activations.has_next else None
-    prev_url = url_for('activate', page=activations.prev_num) \
+    prev_url = url_for('activatei_pin', page=activations.prev_num) \
             if activations.has_prev else None
 
     return render_template('activate.html', title='Activate Your Servers',

@@ -4,6 +4,8 @@ import simplejson as json
 import argparse
 import os.path
 import requests
+import sys
+import time
 
 def check_file(parser, path):
     if not os.path.isfile(path):
@@ -26,16 +28,13 @@ def request_activation_pin(installation_key, facter):
     else:
         return None
 
-def try_download_keys():
-    url = installation_key['request_activation_url']
-    key = installation_key['installation_key']
-    headers = {'installation_key': key, 'Content-Type': 'application/json'}
-    r = requests.post(url, headers=headers, data=json.dumps(facter))
+def try_download_keys(activation_pin_json, installation_key_json):
+    headers = {'installation_key': installation_key_json['installation_key']}
+    r = requests.get(activation_pin_json['download_keys_url'], headers=headers)
     if r.status_code == 200:
         return r.json()
     else:
         return None
-
 
 def main():
     parser = argparse.ArgumentParser()
@@ -48,20 +47,27 @@ def main():
     check_file(parser, args.facter)
 
     with open(args.installationkey, 'r') as json_file:
-        installation_key = json.load(json_file)
+        installation_key_json = json.load(json_file)
 
     with open(args.facter, 'r') as json_file:
         facter = json.load(json_file)
 
-    download_keys_json = request_activation_pin(installation_key, facter)
-    download_keys_url = download_keys_json['download_keys_url']
+    activation_pin_json = request_activation_pin(installation_key_json, facter)
+    if not activation_pin_json:
+        print ('Error getting the activation pin. Check if the installation key is valid.')
+        sys.exit()
 
-    keys_downloaded = None
+    download_keys_json = None
     sleep_secs = 15
-    while not keys_downloaded:
-        download_keys_json = try_download_keys(download_keys_url, installation_key)
-        keys_downloaded = download_keys_json['keys_downloaded']
+    print('Waiting your authorization for pin {} at {}'.format(\
+        str(activation_pin_json['activation_pin']),\
+        activation_pin_json['activate_pin_url']))
+
+    while not download_keys_json:
+        download_keys_json = try_download_keys(activation_pin_json, installation_key_json)
+        print('.', end='', flush=True)
         time.sleep(sleep_secs)
+    print('')
 
 if __name__ == "__main__":
     main()
