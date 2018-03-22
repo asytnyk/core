@@ -326,9 +326,16 @@ def download_server_keys(activation_pin):
 def cleanup_activation_pins(user, older_than_hours):
     current_time = datetime.utcnow()
     time_delta = current_time - timedelta(hours=older_than_hours)
+    
+    count = Activation.query.filter(Activation.user_id == user.id, Activation.created < time_delta).count()
+    if count > 0:
+        Activation.query.filter(Activation.user_id == user.id, Activation.created < time_delta).delete()
+        db.session.commit()
 
-    Activation.query.filter(Activation.user_id == user.id, Activation.created < time_delta).delete()
-    db.session.commit()
+        body = 'Purged {} old activations'.format(count)
+        post = Post(body=body, author=user)
+        db.session.add(post)
+        db.session.commit()
 
 @app.context_processor
 def utility_processor():
