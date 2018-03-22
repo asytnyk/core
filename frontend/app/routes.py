@@ -272,8 +272,9 @@ def request_activation_pin():
     db.session.add(activation)
     db.session.commit()
 
-    filename='activation_pin.json'
-    activation_pin_json = {'activation_pin': activation.activation_pin}
+    filename='download_keys_url.json'
+    activation_pin_json = {'download_keys_url': url_for(download_server_keys,
+        activation_key=activation.activation_pin)}
 
     body = 'Activation key {} requested by {}({}): {}'.format(activation.activation_pin,
             facter_json['manufacturer'], facter_json['productname'], facter_json['serialnumber'])
@@ -284,6 +285,29 @@ def request_activation_pin():
     return Response(json.dumps(activation_pin_json),
             mimetype='application/json',
             headers={'Content-Disposition':'attachment;filename=' + filename})
+
+
+@app.route('/download_server_keys/<activation_key>')
+def download_server_keys(activation_key):
+
+    if current_user.is_authenticated:
+        return render_template('404.html'), 404
+
+    installation_key = request.headers.get('installation_key')
+    if not installation_key:
+        return render_template('404.html'), 404
+
+    user = User.verify_installation_key_token(installation_key)
+    if not user:
+        return render_template('404.html'), 404
+
+    activation = Activation.query.filter_by(user_id = user.id, activation_pin = activation_pin).first()
+    if activation == None:
+        return render_template('404.html'), 404
+
+    if activation.active == False:
+        return Response('not active yet')
+
 
 @app.route('/activate/', defaults={'activation_pin': None})
 @app.route('/activate/<activation_pin>')

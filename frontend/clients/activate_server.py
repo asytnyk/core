@@ -26,6 +26,17 @@ def request_activation_pin(installation_key, facter):
     else:
         return None
 
+def try_download_keys():
+    url = installation_key['request_activation_url']
+    key = installation_key['installation_key']
+    headers = {'installation_key': key, 'Content-Type': 'application/json'}
+    r = requests.post(url, headers=headers, data=json.dumps(facter))
+    if r.status_code == 200:
+        return r.json()
+    else:
+        return None
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('installationkey', help='path to installation-key json file')
@@ -42,7 +53,15 @@ def main():
     with open(args.facter, 'r') as json_file:
         facter = json.load(json_file)
 
-    print (request_activation_pin(installation_key, facter))
+    download_keys_json = request_activation_pin(installation_key, facter)
+    download_keys_url = download_keys_json['download_keys_url']
+
+    keys_downloaded = None
+    sleep_secs = 15
+    while not keys_downloaded:
+        download_keys_json = try_download_keys(download_keys_url, installation_key)
+        keys_downloaded = download_keys_json['keys_downloaded']
+        time.sleep(sleep_secs)
 
 if __name__ == "__main__":
     main()
