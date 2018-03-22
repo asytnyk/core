@@ -6,6 +6,7 @@ import os.path
 import requests
 import sys
 import time
+import urllib3
 
 def check_file(parser, path):
     if not os.path.isfile(path):
@@ -22,7 +23,11 @@ def request_activation_pin(installation_key, facter):
     url = installation_key['request_activation_url']
     key = installation_key['installation_key']
     headers = {'installation_key': key, 'Content-Type': 'application/json'}
-    r = requests.post(url, headers=headers, data=json.dumps(facter))
+    try:
+        r = requests.post(url, headers=headers, data=json.dumps(facter))
+    except (urllib3.exceptions.NewConnectionError, requests.exceptions.ConnectionError):
+        print ('Connection error!')
+        return None
     if r.status_code == 200:
         return r.json()
     else:
@@ -30,7 +35,12 @@ def request_activation_pin(installation_key, facter):
 
 def try_download_keys(activation_pin_json, installation_key_json):
     headers = {'installation_key': installation_key_json['installation_key']}
-    r = requests.get(activation_pin_json['download_keys_url'], headers=headers)
+    try:
+        r = requests.get(activation_pin_json['download_keys_url'], headers=headers)
+    except (urllib3.exceptions.NewConnectionError, requests.exceptions.ConnectionError):
+        print ('Connection error! Check the connection to the Internet')
+        return None
+
     if r.status_code == 200:
         return r.json()
     else:
@@ -52,13 +62,17 @@ def main():
     with open(args.facter, 'r') as json_file:
         facter = json.load(json_file)
 
-    activation_pin_json = request_activation_pin(installation_key_json, facter)
-    if not activation_pin_json:
-        print ('Error getting the activation pin. Check if the installation key is valid.')
-        sys.exit()
+    activation_pin_json = None
+    sleep_secs = 15
+    while not activation_pin_json:
+        print('.', end='', flush=True)
+        activation_pin_json = request_activation_pin(installation_key_json, facter)
+        if not activation_pin_json:
+            print ('Error getting the activation pin. Check if the installation key is valid and if the server is connected to the Internet.')
+            time.sleep(sleep_secs)
+    print('')
 
     download_keys_json = None
-    sleep_secs = 15
     print('Waiting your authorization for pin {} at {}'.format(\
         str(activation_pin_json['activation_pin']),\
         activation_pin_json['activate_pin_url']))
