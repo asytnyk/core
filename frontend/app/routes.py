@@ -7,7 +7,7 @@ from random import randrange
 from app.models import User, Post, Server, Activation
 from app import app, db
 from app.email import send_password_reset_email
-from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm
+from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm, ActivatePinForm
 from app.forms import ResetPasswordRequestForm, ResetPasswordForm, ChangePasswordForm
 import logging
 
@@ -311,14 +311,41 @@ def download_server_keys(activation_pin):
 
     if activation.active == False:
         return '', HTTP_204_NO_CONTENT
+    else:
+        filename='keys.json'
+        keys={'vpn_pvt_key':'super secret private key',\
+              'vpn_crt': 'mega master power secret certificate',
+              'ssh_pub': 'public key from the biggest known prime number'}
+        return Response(json.dumps(keys),
+                mimetype='application/json',
+                headers={'Content-Disposition':'attachment;filename=' + filename})
 
 
 @app.route('/activate_pin/', defaults={'activation_pin': None})
-@app.route('/activate_pin/<activation_pin>')
+@app.route('/activate_pin/<activation_pin>', methods=['GET', 'POST'])
 @login_required
 def activate_pin(activation_pin):
     if activation_pin:
-        print (activation_pin)
+        form = ActivatePinForm()
+
+        if form.validate_on_submit():
+            if not current_user.check_password(form.password.data):
+                print ('wrong pw')
+                flash('Wrong password.')
+                return redirect(url_for('activate_pin',activation_pin=activation_pin))
+            print ('good pw')
+
+            activation = Activation.query.filter_by(user_id = current_user.id, activation_pin = activation_pin).first()
+            activation.active = True
+            db.session.commit()
+            flash('Pin {} is now active'.format(activation_pin))
+            return redirect(url_for('activate_pin'))
+        elif request.method == 'GET':
+            form.pin.data = activation_pin
+            return render_template('activate_pin.html', title='Activate Your Server', form=form)
+        else:
+            flash('Password or pin invalid.')
+            return redirect(url_for('activate_pin', activation_pin=activation_pin))
 
     page = request.args.get('page', 1, type=int)
     activations = current_user.get_activations().paginate(
@@ -326,9 +353,9 @@ def activate_pin(activation_pin):
 
     next_url = url_for('activate_pin', page=activations.next_num) \
             if activations.has_next else None
-    prev_url = url_for('activatei_pin', page=activations.prev_num) \
+    prev_url = url_for('activate_pin', page=activations.prev_num) \
             if activations.has_prev else None
 
-    return render_template('activate.html', title='Activate Your Servers',
+    return render_template('list_activation_pins.html', title='List of Activation Pins',
             activations=activations.items, next_url=next_url, prev_url=prev_url)
 

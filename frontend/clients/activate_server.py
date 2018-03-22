@@ -64,10 +64,12 @@ def main():
         activation_pin_json['activate_pin_url']))
 
     while not download_keys_json:
-        download_keys_json = try_download_keys(activation_pin_json, installation_key_json)
         print('.', end='', flush=True)
-        time.sleep(sleep_secs)
+        download_keys_json = try_download_keys(activation_pin_json, installation_key_json)
+        if not download_keys_json:
+            time.sleep(sleep_secs)
     print('')
+    print (download_keys_json)
 
 if __name__ == "__main__":
     main()

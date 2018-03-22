@@ -63,3 +63,8 @@ class ChangePasswordForm(FlaskForm):
     password2 = PasswordField(
             'Repeat New Password', validators=[DataRequired(), EqualTo('password'), Length(min=6, max=12)])
     submit = SubmitField('Change Password')
+
+class ActivatePinForm(FlaskForm):
+    pin = StringField('Pin', validators=[DataRequired(),])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=6, max=12)])
+    submit = SubmitField('Activate Pin')
