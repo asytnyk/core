@@ -2,6 +2,7 @@
 			<td align="left">{{ activation.activation_pin }}</td>
 			<td align="left">{{ activation.created.date() }}</td>
 			<td align="left">{{ activation.created.time().replace(microsecond=0) }}</td>
+			<td align="left">{{ inject_datetime_delta(activation.last_ping)['time_ago_str'] }}</td>
 			<td align="left">{{ activation.get_server().facter_json['manufacturer'] }}
 			    ({{ activation.get_server().facter_json['productname'] }}):
 			    {{ activation.get_server().facter_json['serialnumber'] }}</td>

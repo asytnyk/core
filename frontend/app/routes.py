@@ -309,6 +309,9 @@ def download_server_keys(activation_pin):
     if activation == None:
         return render_template('404.html'), 404
 
+    activation.last_ping = datetime.utcnow()
+    db.session.commit()
+
     if activation.active == False:
         return '', HTTP_204_NO_CONTENT
     else:
@@ -326,6 +329,29 @@ def cleanup_activation_pins(user, older_than_hours):
 
     Activation.query.filter(Activation.user_id == user.id, Activation.created < time_delta).delete()
     db.session.commit()
+
+@app.context_processor
+def utility_processor():
+    def inject_datetime_delta(datetime_obj):
+
+        seconds = (datetime.utcnow() - datetime_obj).total_seconds()
+
+        if seconds < 120:
+            minutes_str = 'now'
+        else:
+            minutes_str = '{} minutes'.format(int(seconds / 60))
+
+        if seconds < 60 * 60:
+            hours_str = '1 hour'
+        else:
+            hours_str = '{} hours'.format(int(seconds / 60 / 60))
+
+        if seconds / 60 <= 60 :
+            time_ago_str = minutes_str
+        else:
+            time_ago_str = hours_str
+        return {'time_ago_str': time_ago_str}
+    return dict(inject_datetime_delta=inject_datetime_delta)
 
 @app.route('/activation_pins/')
 @login_required
