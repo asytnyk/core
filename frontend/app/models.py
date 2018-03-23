@@ -153,6 +153,64 @@ class Activation(db.Model):
     def get_server(self):
         return Server.query.filter_by(id=self.server_id).first()
 
+
+# Facter Stuff
+class FacterVersion(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    facterversion = db.Column(db.String(32))
+
+class FacterMACAddress(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    macaddress = db.Column(db.String(32))
+
+class FacterArchitecture(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    architecture = db.Column(db.String(32))
+
+class FacterVirtual(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    virtual = db.Column(db.String(128))
+
+class FacterType(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String(64))
+
+class FacterManufacturer(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    manufacturer = db.Column(db.String(64))
+
+class FacterProductName(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    productname = db.Column(db.String(64))
+
+class FacterProcessor(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    processor0 = db.Column(db.String(64))
+
+class FacterFacts(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    is_virt = db.Column(db.Boolean, index=True, default=False)
+    serialnumber = db.Column(db.String(128))
+    uuid = db.Column(db.String(128))
+    physicalprocessorcount = db.Column(db.Integer)
+    processorcount = db.Column(db.Integer)
+    memorysize = db.Column(db.String(32))
+    memorysize_mb = db.Column(db.String(32))
+    blockdevice_sda_size = db.Column(db.String(32))
+
+    facterversion_id = db.relationship('FacterVersion', lazy='dynamic')
+    architecture_id = db.relationship('FacterArchitecture', lazy='dynamic')
+    virtual_id = db.relationship('FacterVirtual', lazy='dynamic')
+    type_id = db.relationship('FacterType', lazy='dynamic')
+    manufacturer_id = db.relationship('FacterManufacturer', lazy='dynamic')
+    productname_id = db.relationship('FacterProductName', lazy='dynamic')
+    processor_id = db.relationship('FacterProcessor', lazy='dynamic')
+
+facts_mac = db.Table('facter_facts_mac',
+        db.Column('macaddress_id', db.Integer, db.ForeignKey(FacterMACAddress.id)),
+        db.Column('facts_id', db.Integer, db.ForeignKey(FacterFacts.id))
+)
+
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))
