@@ -215,9 +215,10 @@ class FacterFacts(db.Model):
 
     mac_addresses = db.relationship(
             'FacterMacaddress', secondary=facter_facts__macaddress,
-            primaryjoin=(facter_facts__macaddress.c.macaddress_id == id),
-            secondaryjoin=(facter_facts__macaddress.c.facts_id == id),
-            backref=db.backref('facter_facts__macaddress', lazy='dynamic'), lazy='dynamic')
+            primaryjoin=(facter_facts__macaddress.c.facts_id == id))
+
+    def add_macaddress(self, macaddress):
+            self.mac_addresses.append(macaddress)
 
 @login.user_loader
 def load_user(id):

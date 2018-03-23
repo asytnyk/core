@@ -254,9 +254,7 @@ def create_it_all(user, facter_json, session):
     (productname, created) = get_one_or_create(session, FacterProductname, productname = facter_json['productname'])
     (processor0, created) = get_one_or_create(session, FacterProcessor, processor0 = facter_json['processor0'])
 
-    print(facterversion.id)
-
-    macaddress = get_one_or_create(session, FacterMacaddress, macaddress = facter_json['macaddress'])
+    (macaddress, created) = get_one_or_create(session, FacterMacaddress, macaddress = facter_json['macaddress'])
 
     facts = FacterFacts(
             is_virtual = facter_json['is_virtual'],
@@ -275,6 +273,8 @@ def create_it_all(user, facter_json, session):
             manufacturer_id = manufacturer.id,
             productname_id = productname.id,
             processor_id = processor0.id)
+    facts.add_macaddress(macaddress)
+
     db.session.add(facts)
     db.session.commit()
 

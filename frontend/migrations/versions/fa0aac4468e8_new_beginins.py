@@ -1,8 +1,8 @@
 """new beginins
 
-Revision ID: c598f8139472
+Revision ID: fa0aac4468e8
 Revises: 
-Create Date: 2018-03-23 18:58:16.265099
+Create Date: 2018-03-23 19:42:08.073188
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'c598f8139472'
+revision = 'fa0aac4468e8'
 down_revision = None
 branch_labels = None
 depends_on = None
