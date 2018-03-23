@@ -155,11 +155,18 @@ class Activation(db.Model):
 
 
 # Facter Stuff
+
+# Need to support more than one MAC / server
+facts_mac = db.Table('facter_facts__macaddress',
+        db.Column('macaddress_id', db.Integer, db.ForeignKey('facter_macaddress.id')),
+        db.Column('facts_id', db.Integer, db.ForeignKey('facter_facts.id'))
+)
+
 class FacterVersion(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     facterversion = db.Column(db.String(32))
 
-class FacterMACAddress(db.Model):
+class FacterMacaddress(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     macaddress = db.Column(db.String(32))
 
@@ -179,7 +186,7 @@ class FacterManufacturer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     manufacturer = db.Column(db.String(64))
 
-class FacterProductName(db.Model):
+class FacterProductname(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     productname = db.Column(db.String(64))
 
@@ -198,18 +205,13 @@ class FacterFacts(db.Model):
     memorysize_mb = db.Column(db.String(32))
     blockdevice_sda_size = db.Column(db.String(32))
 
-    facterversion_id = db.relationship('FacterVersion', lazy='dynamic')
-    architecture_id = db.relationship('FacterArchitecture', lazy='dynamic')
-    virtual_id = db.relationship('FacterVirtual', lazy='dynamic')
-    type_id = db.relationship('FacterType', lazy='dynamic')
-    manufacturer_id = db.relationship('FacterManufacturer', lazy='dynamic')
-    productname_id = db.relationship('FacterProductName', lazy='dynamic')
-    processor_id = db.relationship('FacterProcessor', lazy='dynamic')
-
-facts_mac = db.Table('facter_facts_mac',
-        db.Column('macaddress_id', db.Integer, db.ForeignKey(FacterMACAddress.id)),
-        db.Column('facts_id', db.Integer, db.ForeignKey(FacterFacts.id))
-)
+    facterversion_id = db.Column(db.Integer, db.ForeignKey('facter_version.id'))
+    architecture_id = db.Column(db.Integer, db.ForeignKey('facter_architecture.id'))
+    virtual_id = db.Column(db.Integer, db.ForeignKey('facter_virtual.id'))
+    type_id = db.Column(db.Integer, db.ForeignKey('facter_type.id'))
+    manufacturer_id = db.Column(db.Integer, db.ForeignKey('facter_manufacturer.id'))
+    productname_id = db.Column(db.Integer, db.ForeignKey('facter_productname.id'))
+    processor_id = db.Column(db.Integer, db.ForeignKey('facter_processor.id'))
 
 @login.user_loader
 def load_user(id):

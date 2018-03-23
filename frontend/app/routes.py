@@ -267,6 +267,10 @@ def request_activation_pin():
     if not facter_json:
         return render_template('404.html'), 404
 
+    existing_server = Server.query.filter(Server.user_id == user.id,\
+            Server.facter_json['manufacturer'] == facter_json['manufacturer']).first()
+    print(existing_server)
+
     server = Server(owner=user, facter_json=facter_json)
     db.session.add(server)
     db.session.commit()
