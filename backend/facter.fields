@@ -1,0 +1,38 @@
+architecture
+virtual
+is_virtual
+kernel
+blockdevices
+	blockdevice_sda_size
+	blockdevice_sda_vendor
+	blockdevice_sda_model
+
+
+hardwaremodel
+facterversion
+hardwareisa
+interfaces
+	ipaddress_enp0s31f6
+	macaddress_enp0s31f6
+	netmask_enp0s31f6
+	mtu_enp0s31f6
+ipaddress
+macaddress
+netmask
+boardmanufacturer
+boardproductname
+boardserialnumber
+bios_vendor
+bios_version
+bios_release_date
+manufacturer
+productname
+serialnumber
+uuid
+type
+memorysize
+memorysize_mb
+physicalprocessorcount
+processors
+processorcount
+timezone
