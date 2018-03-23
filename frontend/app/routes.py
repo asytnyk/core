@@ -418,3 +418,19 @@ def activate_pin(activation_pin):
     else:
         flash('Password or pin invalid.')
         return redirect(url_for('activate_pin', activation_pin=activation_pin))
+
+@app.route('/servers/')
+@login_required
+def servers():
+    page = request.args.get('page', 1, type=int)
+
+    servers = current_user.get_servers().paginate(
+            page, app.config['POSTS_PER_PAGE'], False)
+
+    next_url = url_for('servers', page=servers.next_num) \
+            if servers.has_next else None
+    prev_url = url_for('servers', page=servers.prev_num) \
+            if servers.has_prev else None
+
+    return render_template('servers.html', title='List of your servers',
+            servers=servers.items, next_url=next_url, prev_url=prev_url)

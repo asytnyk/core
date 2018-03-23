@@ -5,6 +5,7 @@ from flask import json
 from flask_login import UserMixin
 from hashlib import md5
 import jwt
+from uuid import uuid4
 from app import app, db, login
 
 followers = db.Table('followers',
@@ -94,6 +95,9 @@ class User(UserMixin, db.Model):
     def get_activations(self):
         return Activation.query.filter_by(user_id = self.id).order_by(Activation.created.desc())
 
+    def get_servers(self):
+        return Server.query.filter_by(user_id = self.id).order_by(Server.created.desc())
+
     def __repr__(self):
         return '<User {}>'.format(self.username)
 
@@ -118,8 +122,14 @@ class Vpnkey(db.Model):
     revoked = db.Column(db.Boolean, default=False)
     blocked = db.Column(db.Boolean, default=False)
 
+def str_uuid4():
+    return str(uuid4().hex)
+
 class Server(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    uuid = db.Column(db.String(32), index=True, default=str_uuid4)
+    created = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    last_ping = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     servername = db.Column(db.String(32))
     facter_json = db.Column(db.JSON())
     active = db.Column(db.Boolean, default=False)
