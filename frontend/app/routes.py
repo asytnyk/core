@@ -360,9 +360,9 @@ def utility_processor():
         return {'time_ago_str': time_ago_str}
     return dict(inject_datetime_delta=inject_datetime_delta)
 
-@app.route('/activation_pins/')
+@app.route('/list_activation_pins/')
 @login_required
-def activation_pins():
+def list_activation_pins():
     
     cleanup_activation_pins(current_user, 48)
 
@@ -371,12 +371,12 @@ def activation_pins():
     activations = current_user.get_activations().paginate(
             page, app.config['POSTS_PER_PAGE'], False)
 
-    next_url = url_for('activation_pins', page=activations.next_num) \
+    next_url = url_for('list_activation_pins', page=activations.next_num) \
             if activations.has_next else None
-    prev_url = url_for('activation_pins', page=activations.prev_num) \
+    prev_url = url_for('list_activation_pins', page=activations.prev_num) \
             if activations.has_prev else None
 
-    return render_template('activation_pins.html', title='List of Activation Pins',
+    return render_template('list_activation_pins.html', title='List of Activation Pins',
             activations=activations.items, next_url=next_url, prev_url=prev_url)
 
 @app.route('/activate_pin/<activation_pin>', methods=['GET', 'POST'])
@@ -385,11 +385,11 @@ def activate_pin(activation_pin):
     activation = Activation.query.filter_by(user_id = current_user.id, activation_pin = activation_pin).first()
     if not activation:
         flash('Invalid Pin')
-        return redirect(url_for('activation_pins'))
+        return redirect(url_for('list_activation_pins'))
 
     if activation.active:
         flash('Pin is already active')
-        return redirect(url_for('activation_pins'))
+        return redirect(url_for('list_activation_pins'))
 
     form = ActivatePinForm()
     if form.validate_on_submit():
@@ -410,7 +410,7 @@ def activate_pin(activation_pin):
         db.session.add(post)
         db.session.commit()
 
-        return redirect(url_for('activation_pins'))
+        return redirect(url_for('list_activation_pins'))
 
     elif request.method == 'GET':
         return render_template('activate_pin.html', title='Activate Your Server', form=form,
