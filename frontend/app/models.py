@@ -95,8 +95,11 @@ class User(UserMixin, db.Model):
     def get_activations(self):
         return Activation.query.filter_by(user_id = self.id).order_by(Activation.created.desc())
 
-    def get_servers(self):
+    def get_server_list(self):
         return Server.query.filter_by(user_id = self.id).order_by(Server.created.desc())
+
+    def get_server(self, uuid):
+        return Server.query.filter_by(user_id = self.id, uuid = uuid).first()
 
     def __repr__(self):
         return '<User {}>'.format(self.username)

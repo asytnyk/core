@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+	<h1>Your Server</h1>
+
+	{% include '_list_servers.html' %}
+	<p>Data about the server from the installer</p>
+	<div class="results">
+		<pre>{{ facter }}</pre>
+	</div>
+{% endblock %}

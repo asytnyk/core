@@ -1,4 +1,5 @@
 from flask import render_template, flash, redirect, request, url_for, json, jsonify, Response
+from flask import send_from_directory
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 from datetime import datetime, timedelta
@@ -419,18 +420,33 @@ def activate_pin(activation_pin):
         flash('Password or pin invalid.')
         return redirect(url_for('activate_pin', activation_pin=activation_pin))
 
-@app.route('/servers/')
+@app.route('/list_servers/')
 @login_required
-def servers():
+def list_servers():
     page = request.args.get('page', 1, type=int)
 
-    servers = current_user.get_servers().paginate(
+    servers = current_user.get_server_list().paginate(
             page, app.config['POSTS_PER_PAGE'], False)
 
-    next_url = url_for('servers', page=servers.next_num) \
+    next_url = url_for('list_servers', page=servers.next_num) \
             if servers.has_next else None
-    prev_url = url_for('servers', page=servers.prev_num) \
+    prev_url = url_for('list_servers', page=servers.prev_num) \
             if servers.has_prev else None
 
-    return render_template('servers.html', title='List of your servers',
+    return render_template('list_servers.html', title='List of your servers',
             servers=servers.items, next_url=next_url, prev_url=prev_url)
+
+@app.route('/server/<uuid>')
+@login_required
+def server(uuid):
+    server = current_user.get_server(uuid)
+
+    if not server:
+        flash('Invalid Server')
+        return redirect(url_for('list_servers'))
+
+    facter = json.dumps(server.facter_json, sort_keys = True, indent = 4, separators = (',', ': '))
+
+    return render_template('server.html', title='Your server',
+            servers=[server,], facter=facter)
+
