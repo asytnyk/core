@@ -6,10 +6,13 @@ from datetime import datetime, timedelta
 from time import time
 from random import randrange
 from app.models import User, Post, Server, Activation
+from app.models import FacterVersion, FacterMacaddress, FacterArchitecture, FacterVirtual, FacterType
+from app.models import FacterManufacturer, FacterProductname, FacterProcessor, FacterFacts
 from app import app, db
 from app.email import send_password_reset_email
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm, ActivatePinForm
 from app.forms import ResetPasswordRequestForm, ResetPasswordForm, ChangePasswordForm
+from app.lib import get_one_or_create
 import logging
 
 HTTP_204_NO_CONTENT = 204
@@ -242,6 +245,49 @@ def download_installation_key():
     return Response(json.dumps(access_token), mimetype='application/json',
             headers={'Content-Disposition':'attachment;filename=' + filename})
 
+def create_it_all(user, facter_json, session):
+    (facterversion, created) = get_one_or_create(session, FacterVersion, facterversion = facter_json['facterversion'])
+    (architecture, created) = get_one_or_create(session, FacterArchitecture, architecture = facter_json['architecture'])
+    (virtual, created) = get_one_or_create(session, FacterVirtual, virtual = facter_json['virtual'])
+    (ftype, created) = get_one_or_create(session, FacterType, type = facter_json['type'])
+    (manufacturer, created) = get_one_or_create(session, FacterManufacturer, manufacturer = facter_json['manufacturer'])
+    (productname, created) = get_one_or_create(session, FacterProductname, productname = facter_json['productname'])
+    (processor0, created) = get_one_or_create(session, FacterProcessor, processor0 = facter_json['processor0'])
+
+    print(facterversion.id)
+
+    macaddress = get_one_or_create(session, FacterMacaddress, macaddress = facter_json['macaddress'])
+
+    facts = FacterFacts(
+            is_virtual = facter_json['is_virtual'],
+            serialnumber = facter_json['serialnumber'],
+            uuid = facter_json['uuid'],
+            physicalprocessorcount = facter_json['physicalprocessorcount'],
+            processorcount = facter_json['processorcount'],
+            memorysize = facter_json['memorysize'],
+            memorysize_mb = facter_json['memorysize_mb'],
+            blockdevice_sda_size = facter_json['blockdevice_sda_size'],
+
+            facterversion_id = facterversion.id,
+            architecture_id = architecture.id,
+            virtual_id = virtual.id,
+            type_id = ftype.id,
+            manufacturer_id = manufacturer.id,
+            productname_id = productname.id,
+            processor_id = processor0.id)
+    db.session.add(facts)
+    db.session.commit()
+
+    server = Server(owner=user, facter_facts_id=facts.id)
+    db.session.add(server)
+    db.session.commit()
+
+    activation = Activation(server_id=server.id, user_id=user.id, activation_pin=randrange(1000, 9999))
+    db.session.add(activation)
+    db.session.commit()
+
+    return (activation, facts, server)
+
 @app.route('/request_activation_pin', methods=['GET', 'POST'])
 def request_activation_pin():
     if current_user.is_authenticated:
@@ -267,17 +313,35 @@ def request_activation_pin():
     if not facter_json:
         return render_template('404.html'), 404
 
-    existing_server = Server.query.filter(Server.user_id == user.id,\
-            Server.facter_json['manufacturer'] == facter_json['manufacturer']).first()
-    print(existing_server)
+    facts = FacterFacts.query.filter(
+            FacterFacts.is_virtual == facter_json['is_virtual'],
+            FacterFacts.serialnumber == facter_json['serialnumber'],
+            FacterFacts.uuid == facter_json['uuid'],
+            FacterFacts.physicalprocessorcount == facter_json['physicalprocessorcount'],
+            FacterFacts.processorcount == facter_json['processorcount'],
+            FacterFacts.memorysize == facter_json['memorysize'],
+            FacterFacts.memorysize_mb == facter_json['memorysize_mb'],
+            FacterFacts.blockdevice_sda_size == facter_json['blockdevice_sda_size'],
+            ).first()
 
-    server = Server(owner=user, facter_json=facter_json)
-    db.session.add(server)
-    db.session.commit()
+    if facts:
+        server = Server.query.filter_by(facter_facts_id = facts.id).first()
+        if user.id == server.user_id:
+            error = {'error': 'This server is already active, delete it before continuing:{}'.format(
+                        url_for('server', uuid=server.uuid, _external=True))}
+        else:
+            error = {'error': 'Something is wrong. If this server was activated in the past, deactivate it before continuing.'}
+        return Response(json.dumps(error), mimetype='application/json')
 
-    activation = Activation(server_id=server.id, user_id=user.id, activation_pin=randrange(1000, 9999))
-    db.session.add(activation)
-    db.session.commit()
+    activation, facts, server = create_it_all(user, facter_json, db.session)
+
+#    server = Server(owner=user, facter_json=facter_json)
+#    db.session.add(server)
+#    db.session.commit()
+
+#    activation = Activation(server_id=server.id, user_id=user.id, activation_pin=randrange(1000, 9999))
+#    db.session.add(activation)
+#    db.session.commit()
 
     filename='download_keys_url.json'
     download_keys_url = url_for('download_server_keys', activation_pin=activation.activation_pin, _external=True)

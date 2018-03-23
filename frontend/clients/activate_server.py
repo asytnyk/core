@@ -72,6 +72,10 @@ def main():
             time.sleep(sleep_secs)
     print('')
 
+    if 'error' in activation_pin_json:
+        print (activation_pin_json['error'])
+        sys.exit()
+
     download_keys_json = None
     print('Waiting your authorization for pin {} at {}'.format(\
         str(activation_pin_json['activation_pin']),\

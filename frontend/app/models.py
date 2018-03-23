@@ -6,7 +6,7 @@ from flask_login import UserMixin
 from hashlib import md5
 import jwt
 from uuid import uuid4
-from app import app, db, login
+from app import app, db, login, lib
 
 followers = db.Table('followers',
         db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
@@ -134,9 +134,9 @@ class Server(db.Model):
     created = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     last_ping = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     servername = db.Column(db.String(32))
-    facter_json = db.Column(db.JSON())
     active = db.Column(db.Boolean, default=False)
 
+    facter_facts_id = db.Column(db.Integer, db.ForeignKey('facter_facts.id'))
     sshkey_id = db.Column(db.Integer, db.ForeignKey('sshkey.id'))
     vpnkey_id = db.Column(db.Integer, db.ForeignKey('vpnkey.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -157,7 +157,7 @@ class Activation(db.Model):
 # Facter Stuff
 
 # Need to support more than one MAC / server
-facts_mac = db.Table('facter_facts__macaddress',
+facter_facts__macaddress = db.Table('facter_facts__macaddress',
         db.Column('macaddress_id', db.Integer, db.ForeignKey('facter_macaddress.id')),
         db.Column('facts_id', db.Integer, db.ForeignKey('facter_facts.id'))
 )
@@ -196,7 +196,7 @@ class FacterProcessor(db.Model):
 
 class FacterFacts(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    is_virt = db.Column(db.Boolean, index=True, default=False)
+    is_virtual = db.Column(db.Boolean, index=True, default=False)
     serialnumber = db.Column(db.String(128))
     uuid = db.Column(db.String(128))
     physicalprocessorcount = db.Column(db.Integer)
@@ -212,6 +212,12 @@ class FacterFacts(db.Model):
     manufacturer_id = db.Column(db.Integer, db.ForeignKey('facter_manufacturer.id'))
     productname_id = db.Column(db.Integer, db.ForeignKey('facter_productname.id'))
     processor_id = db.Column(db.Integer, db.ForeignKey('facter_processor.id'))
+
+    mac_addresses = db.relationship(
+            'FacterMacaddress', secondary=facter_facts__macaddress,
+            primaryjoin=(facter_facts__macaddress.c.macaddress_id == id),
+            secondaryjoin=(facter_facts__macaddress.c.facts_id == id),
+            backref=db.backref('facter_facts__macaddress', lazy='dynamic'), lazy='dynamic')
 
 @login.user_loader
 def load_user(id):
