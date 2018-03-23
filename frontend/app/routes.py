@@ -391,13 +391,15 @@ def activate_pin(activation_pin):
         flash('Pin is already active')
         return redirect(url_for('activation_pins'))
 
-
     form = ActivatePinForm()
     if form.validate_on_submit():
         if not current_user.check_password(form.password.data):
-            print ('wrong pw')
             flash('Wrong password.')
-            return redirect(url_for('activate_pin',activation_pin=activation_pin))
+            return redirect(url_for('activate_pin', activation_pin=activation_pin))
+
+        if form.pin.data != activation_pin:
+            flash('Wrong pin.')
+            return redirect(url_for('activate_pin', activation_pin=activation_pin))
 
         activation.active = True
         db.session.commit()
@@ -411,7 +413,6 @@ def activate_pin(activation_pin):
         return redirect(url_for('activation_pins'))
 
     elif request.method == 'GET':
-        form.pin.data = activation_pin
         return render_template('activate_pin.html', title='Activate Your Server', form=form,
                 activations=[activation,])
     else:
