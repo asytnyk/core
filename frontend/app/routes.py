@@ -376,7 +376,7 @@ def activation_pins():
     prev_url = url_for('activation_pins', page=activations.prev_num) \
             if activations.has_prev else None
 
-    return render_template('list_activation_pins.html', title='List of Activation Pins',
+    return render_template('activation_pins.html', title='List of Activation Pins',
             activations=activations.items, next_url=next_url, prev_url=prev_url)
 
 @app.route('/activate_pin/<activation_pin>', methods=['GET', 'POST'])
@@ -412,7 +412,8 @@ def activate_pin(activation_pin):
 
     elif request.method == 'GET':
         form.pin.data = activation_pin
-        return render_template('activate_pin.html', title='Activate Your Server', form=form)
+        return render_template('activate_pin.html', title='Activate Your Server', form=form,
+                activations=[activation,])
     else:
         flash('Password or pin invalid.')
         return redirect(url_for('activate_pin', activation_pin=activation_pin))

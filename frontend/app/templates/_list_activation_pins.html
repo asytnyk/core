@@ -1,0 +1,15 @@
+        <table class="table table-hover">
+                <tr>
+                        <td align="left">pin</td>
+                        <td align="left">date</td>
+                        <td align="left">time</td>
+                        <td align="left">last ping</td>
+			<td align="left">manufacturer(productname): serial</td>
+			<td align="left">RAM size</td>
+                        <td align="left">MAC addr</td>
+			<td align="left">status</td>
+                </tr>
+		{% for activation in activations %}
+			{% include '_activation.html' %}
+		{% endfor %}
+        </table>
