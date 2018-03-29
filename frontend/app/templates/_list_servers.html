@@ -10,14 +10,15 @@
 			<td align="left">status</td>
                 </tr>
 		{% for server in servers %}
+			{% set facts = server.get_facter() %}
 			<tr>
 				<td align="left">{{ server.created.date() }}</td>
 				<td align="left">{{ inject_datetime_delta(server.last_ping)['time_ago_str'] }}</td>
-				<td align="left">{{ server.facter_json['manufacturer'][:16] }}</td>
-				<td align="left">{{ server.facter_json['productname'][:16] }}</rd>
-				<td align="left">{{ server.facter_json['serialnumber'][-16:] }}</td>
-				<td align="left">{{ server.facter_json['memorysize'] }}</td>
-				<td align="left">{{ server.facter_json['macaddress'] }}</td>
+				<td align="left">{{ facts.get_manufacturer()[:16] }}</td>
+				<td align="left">{{ facts.get_productname()[:16] }}</rd>
+				<td align="left">{{ facts.serialnumber[-16:] }}</td>
+				<td align="left">{{ facts.memorysize }}</td>
+				<td align="left">{{ facts.get_macaddress() }}</td>
 				{% if server.active %}
 				<td align="left">active</a></td>
 				{% else %}
