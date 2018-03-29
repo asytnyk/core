@@ -1,8 +1,8 @@
-"""new beginins
+"""initial deployment
 
-Revision ID: fa0aac4468e8
+Revision ID: 7ee585f6db80
 Revises: 
-Create Date: 2018-03-23 19:42:08.073188
+Create Date: 2018-03-29 12:02:56.752744
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'fa0aac4468e8'
+revision = '7ee585f6db80'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -100,6 +100,7 @@ def upgrade():
     sa.Column('manufacturer_id', sa.Integer(), nullable=True),
     sa.Column('productname_id', sa.Integer(), nullable=True),
     sa.Column('processor_id', sa.Integer(), nullable=True),
+    sa.Column('facter_json', sa.String(length=65536), nullable=True),
     sa.ForeignKeyConstraint(['architecture_id'], ['facter_architecture.id'], ),
     sa.ForeignKeyConstraint(['facterversion_id'], ['facter_version.id'], ),
     sa.ForeignKeyConstraint(['manufacturer_id'], ['facter_manufacturer.id'], ),
