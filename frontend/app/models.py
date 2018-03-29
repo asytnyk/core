@@ -141,6 +141,9 @@ class Server(db.Model):
     vpnkey_id = db.Column(db.Integer, db.ForeignKey('vpnkey.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
+    def get_facter(self):
+        return FacterFacts.query.filter_by(id=self.facter_facts_id).first()
+
 class Activation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created = db.Column(db.DateTime, index=True, default=datetime.utcnow)
@@ -218,6 +221,18 @@ class FacterFacts(db.Model):
     mac_addresses = db.relationship(
             'FacterMacaddress', secondary=facter_facts__macaddress,
             primaryjoin=(facter_facts__macaddress.c.facts_id == id))
+
+    def get_manufacturer(self):
+        return FacterManufacturer.query.filter_by(id=self.manufacturer_id).first().manufacturer
+
+    def get_productname(self):
+        return FacterProductname.query.filter_by(id=self.productname_id).first().productname
+
+    #TODO: Need to handle multiple macs
+    def get_macaddress(self):
+        return FacterMacaddress.query.join(
+                facter_facts__macaddress, (facter_facts__macaddress.c.facts_id == self.id)).filter(
+                    facter_facts__macaddress.c.facts_id == self.id).first().macaddress
 
     def add_macaddress(self, macaddress):
             self.mac_addresses.append(macaddress)

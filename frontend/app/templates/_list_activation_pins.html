@@ -15,11 +15,11 @@
 				<td align="left">{{ activation.created.date() }}</td>
 				<td align="left">{{ activation.created.time().replace(microsecond=0) }}</td>
 				<td align="left">{{ inject_datetime_delta(activation.last_ping)['time_ago_str'] }}</td>
-				<td align="left">{{ activation.get_server().facter_json['manufacturer'] }}
-				    ({{ activation.get_server().facter_json['productname'] }}):
-				    {{ activation.get_server().facter_json['serialnumber'] }}</td>
-				<td align="left">{{ activation.get_server().facter_json['memorysize'] }}</td>
-				<td align="left">{{ activation.get_server().facter_json['macaddress'] }}</td>
+				<td align="left">{{ activation.get_server().get_facter().get_manufacturer() }}
+				    ({{ activation.get_server().get_facter().get_productname() }}):
+				    {{ activation.get_server().get_facter().serialnumber }}</td>
+				<td align="left">{{ activation.get_server().get_facter().memorysize }}</td>
+				<td align="left">{{ activation.get_server().get_facter().get_macaddress() }}</td>
 				{% if activation.active %}
 				<td align="left">active</a></td>
 				{% else %}
