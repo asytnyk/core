@@ -12,6 +12,7 @@ from app import app, db
 from app.email import send_password_reset_email
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm, ActivatePinForm
 from app.forms import ResetPasswordRequestForm, ResetPasswordForm, ChangePasswordForm
+from app.forms import DeleteServerForm
 from app.lib import get_one_or_create
 import logging
 
@@ -523,3 +524,76 @@ def server(uuid):
     return render_template('server.html', title='Your server',
             servers=[server,], facter=facter)
 
+    form = ActivatePinForm()
+    if form.validate_on_submit():
+        if not current_user.check_password(form.password.data):
+            flash('Wrong password.')
+            return redirect(url_for('activate_pin', activation_pin=activation_pin))
+
+        if form.pin.data != activation_pin:
+            flash('Wrong pin.')
+            return redirect(url_for('activate_pin', activation_pin=activation_pin))
+
+        activation.active = True
+        db.session.commit()
+        flash('Pin {} is now active'.format(activation_pin))
+
+        body = 'Pin {} activated'.format(activation.activation_pin)
+        post = Post(body=body, author=current_user)
+        db.session.add(post)
+        db.session.commit()
+
+        return redirect(url_for('list_activation_pins'))
+
+    elif request.method == 'GET':
+        return render_template('activate_pin.html', title='Activate Your Server', form=form,
+                activations=[activation,])
+    else:
+        flash('Password or pin invalid.')
+        return redirect(url_for('activate_pin', activation_pin=activation_pin))
+
+@app.route('/delete_server/<uuid>', methods=['GET', 'POST'])
+@login_required
+def delete_server(uuid):
+    server = current_user.get_server(uuid)
+
+    if not server:
+        flash('Invalid Server')
+        return redirect(url_for('list_servers'))
+
+    facts = server.get_facts()
+    facter = json.dumps(json.loads(server.get_facts().facter_json), sort_keys = True, indent = 4,
+            separators = (',', ': '))
+
+    form = DeleteServerForm()
+    if form.validate_on_submit():
+        if not current_user.check_password(form.password.data):
+            flash('Wrong password.')
+            return redirect(url_for('delete_server', uuid=uuid))
+
+        if form.serialnumber.data != facts.serialnumber:
+            flash('Wrong serial number.')
+            return redirect(url_for('delete_server', uuid=uuid))
+
+        if form.macaddress.data.lower() != facts.get_macaddress().lower():
+            flash('Wrong MAC address.')
+            return redirect(url_for('delete_server', uuid=uuid))
+
+        if current_user.delete_server(uuid) == False:
+            flash('Could not delete server.')
+            return redirect(url_for('delete_server', uuid=uuid))
+
+        body = 'Server with serialnumber {} and MAC address {} deleted'.format(facts.serialnumber, facts.get_macaddress())
+        flash(body)
+        post = Post(body=body, author=current_user)
+        db.session.add(post)
+        db.session.commit()
+
+        return redirect(url_for('list_servers'))
+
+    elif request.method == 'GET':
+        return render_template('delete_server.html', title='Delete Your Server', form=form,
+                servers=[server,])
+    else:
+        flash('Password, serial or MAC address are invalid.')
+        return redirect(url_for('delete_server', uuid=uuid))

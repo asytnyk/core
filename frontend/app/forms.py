@@ -68,3 +68,9 @@ class ActivatePinForm(FlaskForm):
     pin = StringField('Pin', validators=[DataRequired(),])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=6, max=12)])
     submit = SubmitField('Activate Pin')
+
+class DeleteServerForm(FlaskForm):
+    macaddress = StringField('MAC address', validators=[DataRequired(),])
+    serialnumber = StringField('serial', validators=[DataRequired(),])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=6, max=12)])
+    submit = SubmitField('Delete Server')

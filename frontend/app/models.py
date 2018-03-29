@@ -101,6 +101,32 @@ class User(UserMixin, db.Model):
     def get_server(self, uuid):
         return Server.query.filter_by(user_id = self.id, uuid = uuid).first()
 
+    def delete_server(self, uuid):
+        server_query = Server.query.filter_by(uuid=uuid, user_id=self.id)
+        server = server_query.first()
+        if not server:
+            flash('Server not found.')
+            return False
+
+        #TODO: also delete the other facter_* tables
+        facts_query = FacterFacts.query.filter_by(id=server.facter_facts_id)
+        facts = facts_query.first()
+        if not facts:
+            flash('Server facts not found.')
+            return False
+
+        activation_query = Activation.query.filter_by(server_id=server.id, user_id=self.id)
+        if activation_query:
+            activation_query.delete()
+
+        facts_query.delete()
+
+        server_query.delete()
+        db.session.commit()
+
+        return True
+
+
     def __repr__(self):
         return '<User {}>'.format(self.username)
 
