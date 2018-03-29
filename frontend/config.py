@@ -21,3 +21,9 @@ class Config(object):
     JWT_PASSWORD_TOKEN_EXPIRES = 600
     JWT_PASSWORD_TOKEN_ALGO = 'HS256'
     JWT_INSTALLATION_KEY_EXPIRES = 86400
+
+    EASY_RSA_PATH = '../../vpn/hosts-vpn/'
+    EASY_RSA_GEN = './gen-client-conf.py'
+    VPN_CLIENT_CONFIG = '/home/peter/dev/iwe/vpn/hosts-vpn/client/client.conf'
+    VPN_CA_CRT = '/home/peter/dev/iwe/vpn/hosts-vpn/client/ca.crt'
+    VPN_TA_KEY = '/home/peter/dev/iwe/vpn/hosts-vpn/client/ta.key'

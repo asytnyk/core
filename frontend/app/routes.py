@@ -5,6 +5,7 @@ from werkzeug.urls import url_parse
 from datetime import datetime, timedelta
 from time import time
 from random import randrange
+import subprocess, os
 from app.models import User, Post, Server, Activation
 from app.models import FacterVersion, FacterMacaddress, FacterArchitecture, FacterVirtual, FacterType
 from app.models import FacterManufacturer, FacterProductname, FacterProcessor, FacterFacts
@@ -367,7 +368,7 @@ def request_activation_pin():
 
 @app.route('/download_server_keys/<activation_pin>')
 def download_server_keys(activation_pin):
-
+    #TODO: Server can be deleted while waiting for activation. Needs to handle that or the client will wait forever!
     if current_user.is_authenticated:
         return render_template('404.html'), 404
 
@@ -388,14 +389,42 @@ def download_server_keys(activation_pin):
 
     if activation.active == False:
         return '', HTTP_204_NO_CONTENT
-    else:
-        filename='keys.json'
-        keys={'vpn_pvt_key':'super secret private key',\
-              'vpn_crt': 'mega master power secret certificate',
-              'ssh_pub': 'public key from the biggest known prime number'}
-        return Response(json.dumps(keys),
-                mimetype='application/json',
-                headers={'Content-Disposition':'attachment;filename=' + filename})
+
+    server = Server.query.filter_by(id = activation.server_id).first()
+
+    cmd = [app.config['EASY_RSA_GEN'], server.uuid]
+    pwd = os.path.dirname(os.path.realpath(__file__))
+    cwd = '{}/{}'.format(pwd, app.config['EASY_RSA_PATH'])
+    ret = subprocess.run(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+    if ret.returncode != 0:
+        error = {'error': 'Problem found when creating keys. You may need to delete the server and try again.'}
+        print (ret)
+        return Response(json.dumps(error), mimetype='application/json')
+
+    keys_json = json.loads(ret.stdout)
+    
+    with open(app.config['VPN_CLIENT_CONFIG'], 'r') as vpn_client_conf_file:
+        vpn_client_conf = vpn_client_conf_file.read()
+
+    with open(app.config['VPN_CA_CRT'], 'r') as vpn_ca_crt_file:
+        vpn_ca_crt = vpn_ca_crt_file.read()
+
+    with open(app.config['VPN_TA_KEY'], 'r') as vpn_ta_key_file:
+        vpn_ta_key = vpn_ta_key_file.read()
+
+    filename='client_conf.json'
+    client_conf={
+          'vpn_client_pvt_key': keys_json['vpn_client_pvt_key'],
+          'vpn_client_crt': keys_json['vpn_client_crt'],
+          'vpn_ca_crt': vpn_ca_crt,
+          'vpn_ta_key': vpn_ta_key,
+          'vpn_client_conf': vpn_client_conf,
+          'ssh_pub': 'public key from the biggest known prime number'}
+
+    return Response(json.dumps(client_conf),
+            mimetype='application/json',
+            headers={'Content-Disposition':'attachment;filename=' + filename})
 
 def cleanup_activation_pins(user, older_than_hours):
     current_time = datetime.utcnow()

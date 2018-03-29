@@ -7,6 +7,7 @@ import requests
 import sys
 import time
 import urllib3
+import subprocess
 
 def check_file(parser, path):
     if not os.path.isfile(path):
@@ -33,7 +34,7 @@ def request_activation_pin(installation_key, facter):
     else:
         return None
 
-def try_download_keys(activation_pin_json, installation_key_json):
+def try_download_client_conf(activation_pin_json, installation_key_json):
     headers = {'installation_key': installation_key_json['installation_key']}
     try:
         r = requests.get(activation_pin_json['download_keys_url'], headers=headers)
@@ -76,18 +77,23 @@ def main():
         print (activation_pin_json['error'])
         sys.exit()
 
-    download_keys_json = None
+    client_conf_json = None
+    subprocess.run(['figlet', '-f', 'big', 'Pin: {}'.format(activation_pin_json['activation_pin'])])
     print('Waiting your authorization for pin {} at {}'.format(\
         str(activation_pin_json['activation_pin']),\
         activation_pin_json['activate_pin_url']))
 
-    while not download_keys_json:
+    while not client_conf_json:
         print('.', end='', flush=True)
-        download_keys_json = try_download_keys(activation_pin_json, installation_key_json)
-        if not download_keys_json:
+        client_conf_json = try_download_client_conf(activation_pin_json, installation_key_json)
+        if not client_conf_json:
             time.sleep(sleep_secs)
     print('')
-    print (download_keys_json)
+    if 'error' in client_conf_json:
+        print (client_conf_json['error'])
+        sys.exit()
+
+    print (client_conf_json)
 
 if __name__ == "__main__":
     main()
