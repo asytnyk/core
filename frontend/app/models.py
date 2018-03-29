@@ -213,6 +213,8 @@ class FacterFacts(db.Model):
     productname_id = db.Column(db.Integer, db.ForeignKey('facter_productname.id'))
     processor_id = db.Column(db.Integer, db.ForeignKey('facter_processor.id'))
 
+    facter_json = db.Column(db.String(65536))
+
     mac_addresses = db.relationship(
             'FacterMacaddress', secondary=facter_facts__macaddress,
             primaryjoin=(facter_facts__macaddress.c.facts_id == id))

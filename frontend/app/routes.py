@@ -246,6 +246,7 @@ def download_installation_key():
             headers={'Content-Disposition':'attachment;filename=' + filename})
 
 def create_it_all(user, facter_json, session):
+    #TODO check these created status
     (facterversion, created) = get_one_or_create(session, FacterVersion, facterversion = facter_json['facterversion'])
     (architecture, created) = get_one_or_create(session, FacterArchitecture, architecture = facter_json['architecture'])
     (virtual, created) = get_one_or_create(session, FacterVirtual, virtual = facter_json['virtual'])
@@ -272,7 +273,9 @@ def create_it_all(user, facter_json, session):
             type_id = ftype.id,
             manufacturer_id = manufacturer.id,
             productname_id = productname.id,
-            processor_id = processor0.id)
+            processor_id = processor0.id,
+            facter_json = facter_json)
+
     facts.add_macaddress(macaddress)
 
     db.session.add(facts)
@@ -313,6 +316,7 @@ def request_activation_pin():
     if not facter_json:
         return render_template('404.html'), 404
 
+    #TODO: Add mac address
     facts = FacterFacts.query.filter(
             FacterFacts.is_virtual == facter_json['is_virtual'],
             FacterFacts.serialnumber == facter_json['serialnumber'],
