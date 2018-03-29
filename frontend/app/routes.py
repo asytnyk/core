@@ -8,13 +8,13 @@ from random import randrange
 import subprocess, os
 from app.models import User, Post, Server, Activation
 from app.models import FacterVersion, FacterMacaddress, FacterArchitecture, FacterVirtual, FacterType
-from app.models import FacterManufacturer, FacterProductname, FacterProcessor, FacterFacts
+from app.models import FacterManufacturer, FacterProductname, FacterProcessor, FacterFacts, Sshkey
 from app import app, db
 from app.email import send_password_reset_email
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm, ActivatePinForm
 from app.forms import ResetPasswordRequestForm, ResetPasswordForm, ChangePasswordForm
 from app.forms import DeleteServerForm
-from app.lib import get_one_or_create
+from app.lib import get_one_or_create, gen_ssh_key_pair
 import logging
 
 HTTP_204_NO_CONTENT = 204
@@ -403,6 +403,20 @@ def download_server_keys(activation_pin):
         return Response(json.dumps(error), mimetype='application/json')
 
     keys_json = json.loads(ret.stdout)
+
+    pub, priv = gen_ssh_key_pair()
+    if not pub or not priv:
+        error = {'error': 'Problem found when creating keys. You may need to delete the server and try again.'}
+        print (ret)
+        return Response(json.dumps(error), mimetype='application/json')
+
+    ssh_key = Sshkey(pub=pub, priv=priv)
+    db.session.add(ssh_key)
+    db.session.commit()
+
+    server.sshkey_id = ssh_key.id
+    db.session.add(ssh_key)
+    db.session.commit()
     
     with open(app.config['VPN_CLIENT_CONFIG'], 'r') as vpn_client_conf_file:
         vpn_client_conf = vpn_client_conf_file.read()
@@ -420,7 +434,7 @@ def download_server_keys(activation_pin):
           'vpn_ca_crt': vpn_ca_crt,
           'vpn_ta_key': vpn_ta_key,
           'vpn_client_conf': vpn_client_conf,
-          'ssh_pub': 'public key from the biggest known prime number'}
+          'ssh_pub': ssh_key.pub }
 
     return Response(json.dumps(client_conf),
             mimetype='application/json',

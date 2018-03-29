@@ -119,6 +119,10 @@ class User(UserMixin, db.Model):
         if activation_query:
             activation_query.delete()
 
+        sshkey_query = Sshkey.query.filter_by(id=server.sshkey_id)
+        if sshkey_query:
+            sshkey_query.delete()
+
         facts_query.delete()
 
         server_query.delete()
