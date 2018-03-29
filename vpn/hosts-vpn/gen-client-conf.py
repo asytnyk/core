@@ -29,8 +29,8 @@ def main():
         certificate = certificate_file.read()
 
     print (json.dumps(
-        {'private_key': private_key,
-        'certificate': certificate},
+        {'vpn_client_pvt_key': private_key,
+        'vpn_client_crt': certificate},
         sort_keys=True, indent=4 * ' '))
 
 
