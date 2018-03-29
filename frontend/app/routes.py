@@ -274,7 +274,7 @@ def create_it_all(user, facter_json, session):
             manufacturer_id = manufacturer.id,
             productname_id = productname.id,
             processor_id = processor0.id,
-            facter_json = facter_json)
+            facter_json = json.dumps(facter_json))
 
     facts.add_macaddress(macaddress)
 
