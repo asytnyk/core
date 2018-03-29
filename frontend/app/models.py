@@ -231,8 +231,9 @@ class FacterFacts(db.Model):
     #TODO: Need to handle multiple macs
     def get_macaddress(self):
         return FacterMacaddress.query.join(
-                facter_facts__macaddress, (facter_facts__macaddress.c.facts_id == self.id)).filter(
-                    facter_facts__macaddress.c.facts_id == self.id).first().macaddress
+                facter_facts__macaddress, (facter_facts__macaddress.c.macaddress_id == FacterMacaddress.id)).filter(
+                    facter_facts__macaddress.c.facts_id == self.id,
+                    ).first().macaddress
 
     def add_macaddress(self, macaddress):
             self.mac_addresses.append(macaddress)

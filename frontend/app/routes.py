@@ -274,7 +274,7 @@ def create_it_all(user, facter_json, session):
             manufacturer_id = manufacturer.id,
             productname_id = productname.id,
             processor_id = processor0.id,
-            facter_json = json.dumps(facter_json))
+            facter_json = json.dumps(facter_json, sort_keys = True, indent = 4, separators = (',', ': ')))
 
     facts.add_macaddress(macaddress)
 
@@ -517,7 +517,7 @@ def server(uuid):
         flash('Invalid Server')
         return redirect(url_for('list_servers'))
 
-    facter = json.dumps(server.facter_json, sort_keys = True, indent = 4, separators = (',', ': '))
+    facter = server.get_facts().facter_json
 
     return render_template('server.html', title='Your server',
             servers=[server,], facter=facter)
