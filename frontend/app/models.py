@@ -141,7 +141,7 @@ class Server(db.Model):
     vpnkey_id = db.Column(db.Integer, db.ForeignKey('vpnkey.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    def get_facter(self):
+    def get_facts(self):
         return FacterFacts.query.filter_by(id=self.facter_facts_id).first()
 
 class Activation(db.Model):

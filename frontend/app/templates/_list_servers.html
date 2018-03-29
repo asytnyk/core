@@ -10,7 +10,7 @@
 			<td align="left">status</td>
                 </tr>
 		{% for server in servers %}
-			{% set facts = server.get_facter() %}
+			{% set facts = server.get_facts() %}
 			<tr>
 				<td align="left">{{ server.created.date() }}</td>
 				<td align="left">{{ inject_datetime_delta(server.last_ping)['time_ago_str'] }}</td>
