@@ -4,3 +4,5 @@ backend.sqlite3
 logs
 frontend/app.db
 *.iso
+installer/builder
+installer/toadd
