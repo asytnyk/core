@@ -8,6 +8,7 @@ import sys
 import time
 import urllib3
 import subprocess
+from pyfiglet import Figlet
 
 def check_file(parser, path):
     if not os.path.isfile(path):
@@ -78,9 +79,11 @@ def main():
         sys.exit()
 
     client_conf_json = None
-    subprocess.run(['figlet', '-f', 'big', 'Pin: {}'.format(activation_pin_json['activation_pin'])])
-    print('Waiting your authorization for pin {} at {}'.format(\
-        str(activation_pin_json['activation_pin']),\
+    f = Figlet('big')
+    print('Waiting your authorization for pin {}'.format(
+        str(activation_pin_json['activation_pin'])))
+    print(f.renderText('Pin {}'.format(activation_pin_json['activation_pin'])))
+    print('You can activate it at {}'.format(
         activation_pin_json['activate_pin_url']))
 
     while not client_conf_json:
