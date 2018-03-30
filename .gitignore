@@ -3,3 +3,4 @@ backend.sqlite3
 *.pyc
 logs
 frontend/app.db
+*.iso
