@@ -1,0 +1,3 @@
+For sake of simplicity, some files need to be regenerated when the original iso change. Here is a list of changes:
+ - toadd/linux/images/efiboot.img
+	* Change grub.conf to include rd.live.ram and ks=...
