@@ -1,3 +1,11 @@
 For sake of simplicity, some files need to be regenerated when the original iso change. Here is a list of changes:
  - toadd/linux/images/efiboot.img
 	* Change grub.conf to include rd.live.ram and ks=...
+
+The iwe.img is a compressed squasfs that is generated with:
+	cd /tmp
+	mkdir iwe
+	sudo dnf --installroot=/tmp/iwe --releasever=27 install facter rubygem-json
+	Then copy iwe client to the propper location
+	And generate the squashfs with
+	mksquashfs /tmp/iwe ~/dev/iwe/installer/toadd/linux/images/iwe.img -comp xz
