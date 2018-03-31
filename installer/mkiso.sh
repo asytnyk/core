@@ -11,8 +11,8 @@ mntdir='/mnt/linux'
 # New partition is created for the user to save the installation key
 extramegs=5
 
-if [[ ! -f $infilename ]]; then
-	wget $url
+if [[ ! -f downloads/$infilename ]]; then
+	wget $url -O downloads/$infilename
 else
 	echo
 	echo $filename exists and I will not download it again
@@ -20,7 +20,7 @@ else
 fi
 
 sudo umount $mntdir
-sudo mount -o loop $infilename $mntdir
+sudo mount -o loop downloads/$infilename $mntdir
 if [[ $? != 0 ]]; then
 	echo could not mount $filename $mntdir. Aborting...
 	exit 1
@@ -56,13 +56,13 @@ xorriso -as mkisofs\
 	.
 
 cd ../..
-rm -f $outfilename
-mv /tmp/$outfilename .
+rm -f images/$outfilename
+mv /tmp/$outfilename images/
 
 sudo umount $mntdir
 
 # add a partition for the user to save the installation key
-dd if=/dev/zero of=$outfilename bs=1M count=$extramegs oflag=append conv=notrunc
+dd if=/dev/zero of=images/$outfilename bs=1M count=$extramegs oflag=append conv=notrunc
 
 # From: https://superuser.com/questions/332252/how-to-create-and-format-a-partition-using-a-bash-script
 # to create the partitions programatically (rather than manually)
@@ -71,7 +71,7 @@ dd if=/dev/zero of=$outfilename bs=1M count=$extramegs oflag=append conv=notrunc
 # document what we're doing in-line with the actual commands
 # Note that a blank line (commented as "defualt" will send a empty
 # line terminated with a newline to take the fdisk default.
-sed -e 's/\s*\([\+0-9a-zA-Z]*\).*/\1/' << EOF | fdisk $outfilename
+sed -e 's/\s*\([\+0-9a-zA-Z]*\).*/\1/' << EOF | fdisk images/$outfilename
   n # new partition
   p # primary partition
   4 # Partition number
@@ -83,10 +83,8 @@ sed -e 's/\s*\([\+0-9a-zA-Z]*\).*/\1/' << EOF | fdisk $outfilename
   w # write the partition table
 EOF
 
-loopdev=$(sudo kpartx -av $outfilename|grep p4|cut -d ' ' -f 3)
+loopdev=$(sudo kpartx -av images/$outfilename|grep p4|cut -d ' ' -f 3)
 
 sudo mkfs.vfat -n 'iWe' /dev/mapper/$loopdev
 
-sudo kpartx -dv $outfilename
-
-
+sudo kpartx -dv images/$outfilename
