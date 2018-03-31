@@ -319,16 +319,20 @@ def request_activation_pin():
         return render_template('404.html'), 404
 
     #TODO: Add mac address
-    facts = FacterFacts.query.filter(
-            FacterFacts.is_virtual == facter_json['is_virtual'],
-            FacterFacts.serialnumber == facter_json['serialnumber'],
-            FacterFacts.uuid == facter_json['uuid'],
-            FacterFacts.physicalprocessorcount == facter_json['physicalprocessorcount'],
-            FacterFacts.processorcount == facter_json['processorcount'],
-            FacterFacts.memorysize == facter_json['memorysize'],
-            FacterFacts.memorysize_mb == facter_json['memorysize_mb'],
-            FacterFacts.blockdevice_sda_size == facter_json['blockdevice_sda_size'],
-            ).first()
+    try:
+        facts = FacterFacts.query.filter(
+                FacterFacts.is_virtual == facter_json['is_virtual'],
+                FacterFacts.serialnumber == facter_json['serialnumber'],
+                FacterFacts.uuid == facter_json['uuid'],
+                FacterFacts.physicalprocessorcount == facter_json['physicalprocessorcount'],
+                FacterFacts.processorcount == facter_json['processorcount'],
+                FacterFacts.memorysize == facter_json['memorysize'],
+                FacterFacts.memorysize_mb == facter_json['memorysize_mb'],
+                FacterFacts.blockdevice_sda_size == facter_json['blockdevice_sda_size'],
+                ).first()
+    except:
+        error = {'error': 'The data we got is not right. Are you using the latest version of the installer?'}
+        return Response(json.dumps(error), mimetype='application/json')
 
     if facts:
         server = Server.query.filter_by(facter_facts_id = facts.id).first()
