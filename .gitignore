@@ -6,4 +6,4 @@ iwegarde/app.db
 *.iso
 installer/builder
 installer/toadd
-iwegarde/venv
+venv
