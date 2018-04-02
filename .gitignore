@@ -2,7 +2,8 @@
 backend.sqlite3
 *.pyc
 logs
-frontend/app.db
+iwegarde/app.db
 *.iso
 installer/builder
 installer/toadd
+iwegarde/venv
