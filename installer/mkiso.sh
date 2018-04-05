@@ -85,6 +85,6 @@ EOF
 
 loopdev=$(sudo kpartx -av images/$outfilename|grep p4|cut -d ' ' -f 3)
 
-sudo mkfs.vfat -n 'iWe' /dev/mapper/$loopdev
+sudo mkfs.vfat -n 'IWE_INST' /dev/mapper/$loopdev
 
 sudo kpartx -dv images/$outfilename
