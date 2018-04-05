@@ -1,7 +1,7 @@
 #!/bin/bash
 
 releasever=27
-packages="facter rubygem-json"
+packages="facter rubygem-json python3"
 
 targetdir="$PWD/lower"
 echo $targetdir
