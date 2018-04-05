@@ -7,3 +7,6 @@ iwegarde/app.db
 installer/builder
 installer/toadd
 venv
+installer/chroot/lower
+installer/chroot/merged
+installer/chroot/work
