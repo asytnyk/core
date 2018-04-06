@@ -24,7 +24,7 @@ def check_file(parser, path):
 def request_activation_pin(installation_key, facter):
     url = installation_key['request_activation_url']
     key = installation_key['installation_key']
-    headers = {'installation_key': key, 'Content-Type': 'application/json'}
+    headers = {'installation-key': key, 'Content-Type': 'application/json'}
     try:
         r = requests.post(url, headers=headers, data=json.dumps(facter))
     except (urllib3.exceptions.NewConnectionError, requests.exceptions.ConnectionError):
@@ -36,7 +36,7 @@ def request_activation_pin(installation_key, facter):
         return None
 
 def try_download_client_conf(activation_pin_json, installation_key_json):
-    headers = {'installation_key': installation_key_json['installation_key']}
+    headers = {'installation-key': installation_key_json['installation_key']}
     try:
         r = requests.get(activation_pin_json['download_keys_url'], headers=headers)
     except (urllib3.exceptions.NewConnectionError, requests.exceptions.ConnectionError):
