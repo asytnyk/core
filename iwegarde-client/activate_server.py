@@ -23,7 +23,7 @@ def check_file(parser, path):
 # Check https://stackoverflow.com/questions/14393339/convert-this-curl-cmd-to-python-3 for https
 def request_activation_pin(installation_key, facter):
     url = installation_key['request_activation_url']
-    key = installation_key['installation_key']
+    key = installation_key['installation-key']
     headers = {'installation-key': key, 'Content-Type': 'application/json'}
     try:
         r = requests.post(url, headers=headers, data=json.dumps(facter))
@@ -36,7 +36,7 @@ def request_activation_pin(installation_key, facter):
         return None
 
 def try_download_client_conf(activation_pin_json, installation_key_json):
-    headers = {'installation-key': installation_key_json['installation_key']}
+    headers = {'installation-key': installation_key_json['installation-key']}
     try:
         r = requests.get(activation_pin_json['download_keys_url'], headers=headers)
     except (urllib3.exceptions.NewConnectionError, requests.exceptions.ConnectionError):
