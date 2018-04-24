@@ -10,3 +10,4 @@ venv
 installer/chroot/lower
 installer/chroot/merged
 installer/chroot/work
+installer/chroot/upper/opt/iWe
