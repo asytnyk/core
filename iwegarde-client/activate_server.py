@@ -96,7 +96,25 @@ def main():
         print (client_conf_json['error'])
         sys.exit()
 
-    print (client_conf_json)
+    uuid = client_conf_json['server_uuid']
+
+    with open('client-conf/{}.key'.format(uuid), 'w') as pvt_key:
+        pvt_key.write(client_conf_json['vpn_client_pvt_key'])
+
+    with open('client-conf/{}.crt'.format(uuid), 'w') as client_crt:
+        client_crt.write(client_conf_json['vpn_client_crt'])
+
+    with open('client-conf/ca.crt', 'w') as ca_crt:
+        ca_crt.write(client_conf_json['vpn_ca_crt'])
+
+    with open('client-conf/ta.key', 'w') as ta_key:
+        ta_key.write(client_conf_json['vpn_ta_key'])
+
+    with open('client-conf/client.conf', 'w') as client_conf:
+        client_conf.write(client_conf_json['vpn_client_conf'])
+
+    with open('client-conf/id_rsa.pub', 'w') as ssh_pub:
+        ssh_pub.write(client_conf_json['ssh_pub'])
 
 if __name__ == "__main__":
     main()
