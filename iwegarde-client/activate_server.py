@@ -10,6 +10,9 @@ import urllib3
 import subprocess
 from pyfiglet import Figlet
 
+dest_dir = "/tmp/iWe/client-conf"
+error_file = "/tmp/iWe/activation_error"
+
 def check_file(parser, path):
     if not os.path.isfile(path):
         parser.error("The file %s does not exist!" % path)
@@ -76,6 +79,8 @@ def main():
 
     if 'error' in activation_pin_json:
         print (activation_pin_json['error'])
+        with open(error_file, 'w+') as err:
+            err.write(activation_pin_json['error'])
         sys.exit()
 
     client_conf_json = None
@@ -94,26 +99,28 @@ def main():
     print('')
     if 'error' in client_conf_json:
         print (client_conf_json['error'])
+        with open(error_file, 'w+') as err:
+            err.write(activation_pin_json['error'])
         sys.exit()
 
     uuid = client_conf_json['server_uuid']
 
-    with open('client-conf/{}.key'.format(uuid), 'w') as pvt_key:
+    with open('{}/{}.key'.format(dest_dir, uuid), 'w+') as pvt_key:
         pvt_key.write(client_conf_json['vpn_client_pvt_key'])
 
-    with open('client-conf/{}.crt'.format(uuid), 'w') as client_crt:
+    with open('{}/{}.crt'.format(dest_dir, uuid), 'w+') as client_crt:
         client_crt.write(client_conf_json['vpn_client_crt'])
 
-    with open('client-conf/ca.crt', 'w') as ca_crt:
+    with open('{}/ca.crt'.format(dest_dir), 'w+') as ca_crt:
         ca_crt.write(client_conf_json['vpn_ca_crt'])
 
-    with open('client-conf/ta.key', 'w') as ta_key:
+    with open('{}/ta.key'.format(dest_dir), 'w+') as ta_key:
         ta_key.write(client_conf_json['vpn_ta_key'])
 
-    with open('client-conf/client.conf', 'w') as client_conf:
+    with open('{}/client.conf'.format(dest_dir), 'w+') as client_conf:
         client_conf.write(client_conf_json['vpn_client_conf'])
 
-    with open('client-conf/id_rsa.pub', 'w') as ssh_pub:
+    with open('{}/id_rsa.pub'.format(dest_dir), 'w+') as ssh_pub:
         ssh_pub.write(client_conf_json['ssh_pub'])
 
 if __name__ == "__main__":
