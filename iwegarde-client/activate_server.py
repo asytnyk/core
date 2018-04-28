@@ -2,7 +2,7 @@
 
 import simplejson as json
 import argparse
-import os.path
+import os
 import requests
 import sys
 import time
@@ -12,6 +12,7 @@ from pyfiglet import Figlet
 
 dest_dir = "/tmp/iWe/client-conf"
 error_file = "/tmp/iWe/activation_error"
+uuid_file = "/tmp/iWe/server_uuid"
 
 def check_file(parser, path):
     if not os.path.isfile(path):
@@ -105,6 +106,9 @@ def main():
 
     uuid = client_conf_json['server_uuid']
 
+    with open (uuid_file, 'w+') as uuid_fd:
+        uuid_fd.write(uuid)
+
     with open('{}/{}.key'.format(dest_dir, uuid), 'w+') as pvt_key:
         pvt_key.write(client_conf_json['vpn_client_pvt_key'])
 
@@ -117,11 +121,17 @@ def main():
     with open('{}/ta.key'.format(dest_dir), 'w+') as ta_key:
         ta_key.write(client_conf_json['vpn_ta_key'])
 
-    with open('{}/client.conf'.format(dest_dir), 'w+') as client_conf:
+    with open('{}/iwe-beta.conf'.format(dest_dir), 'w+') as client_conf:
         client_conf.write(client_conf_json['vpn_client_conf'])
 
     with open('{}/id_rsa.pub'.format(dest_dir), 'w+') as ssh_pub:
         ssh_pub.write(client_conf_json['ssh_pub'])
+
+    # create links so we can use client.key and client.crt inside
+    # openvpn config file
+    os.chdir(dest_dir)
+    os.symlink('{}.key'.format(uuid), 'client.key')
+    os.symlink('{}.crt'.format(uuid), 'client.crt')
 
 if __name__ == "__main__":
     main()
