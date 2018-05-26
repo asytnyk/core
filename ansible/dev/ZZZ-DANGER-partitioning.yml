@@ -1,0 +1,63 @@
+---
+- hosts: notes
+  tasks:
+          # custumer-ssd
+          - parted:
+                  device: /dev/sda
+                  number: 4
+                  state: absent
+          - parted:
+                  device: /dev/sda
+                  number: 4
+                  state: present
+                  part_start: 52463616s
+                  part_end: 996182015s
+                  flags: [ lvm ]
+
+          # service-hdd
+          - parted:
+                  device: /dev/sdb
+                  number: 1
+                  state: absent
+          - parted:
+                  device: /dev/sdb
+                  number: 1
+                  state: present
+                  label: gpt
+                  part_start: 2048s
+                  part_end: 1887438847s
+                  flags: [ lvm ]
+
+          - lvg:
+                vg: clalld-customer
+                state: absent
+                force: yes
+
+          - lvg:
+                vg: clalld-customer
+                state: present
+                pvs: /dev/sda4
+
+          - lvg:
+                vg: clalld-service
+                state: absent
+                force: yes
+
+          - lvg:
+                vg: clalld-service
+                state: present
+                pvs: /dev/sdb1
+
+          - lvol:
+                  lv: customer-thin-pool
+                  vg: clalld-customer
+                  size: 450000
+
+          - shell: lvconvert -y --type thin-pool clalld-customer/customer-thin-pool
+
+          - lvol:
+                  lv: service-thin-pool
+                  vg: clalld-service
+                  size: 900000
+
+          - shell: lvconvert -y --type thin-pool clalld-service/service-thin-pool

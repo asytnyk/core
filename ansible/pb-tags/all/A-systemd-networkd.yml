@@ -1,0 +1,52 @@
+---
+- hosts: all
+  tasks:
+          - file:
+                  path: /etc/systemd/network
+                  state: directory
+
+          - ini_file:
+                  path: /etc/systemd/network/{{ ansible_default_ipv4.interface }}.network
+                  section: Match
+                  option: Name
+                  value: "{{ ansible_default_ipv4.interface }}"
+                  no_extra_spaces: yes
+          - ini_file:
+                  path: /etc/systemd/network/{{ ansible_default_ipv4.interface }}.network
+                  section: Network
+                  option: DHCP
+                  value: 'yes'
+                  no_extra_spaces: yes
+          - ini_file:
+                  path: /etc/systemd/network/{{ ansible_default_ipv4.interface }}.network
+                  section: Network
+                  option: IPForward
+                  value: 'yes'
+                  no_extra_spaces: yes
+
+          - systemd:
+                  name: NetworkManager
+                  enabled: no
+          - systemd:
+                  name: NetworkManager-wait-online.service
+                  enabled: no
+          - systemd:
+                  name: systemd-networkd
+                  enabled: yes
+
+          - file:
+                  path: /etc/resolv.conf
+                  state: absent
+          - file:
+                  dest: /etc/resolv.conf
+                  src: /run/systemd/resolve/resolv.conf
+                  force: yes
+                  state: link
+          - systemd:
+                  name: systemd-resolved
+                  enabled: yes
+
+          # Unfortunately systemd-networkd is not getting the hostname from the DHCP
+          # This gets the hostname from the DNS
+          #- shell: "hostnamectl set-hostname $(host $(ip a s {{ ansible_default_ipv4.interface }}| awk '/inet /{print $2}'|cut -d '/' -f 1)|awk '{ print $5 }')"
+

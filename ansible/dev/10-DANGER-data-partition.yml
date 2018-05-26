@@ -1,0 +1,26 @@
+---
+- hosts: notes
+  tasks:
+          - mount:
+                  path: /mnt/data
+                  state: absent
+          - parted:
+                  device: /dev/sdb
+                  number: 1
+                  state: absent
+          - parted:
+                  device: /dev/sdb
+                  number: 1
+                  state: present
+                  part_start: 1s
+
+          - shell: mkfs.ext4 -L "iwe_data" /dev/sdb1
+          - mount:
+                  path: /mnt/data
+                  src: LABEL=iwe_data
+                  fstype: ext4
+                  state: mounted
+          - file:
+                  path: /mnt/data
+                  mode: 0777
+                  state: directory

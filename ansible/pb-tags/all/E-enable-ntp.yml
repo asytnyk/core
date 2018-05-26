@@ -1,0 +1,4 @@
+---
+- hosts: all
+  tasks:
+  - shell: timedatectl set-ntp true

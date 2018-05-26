@@ -1,0 +1,31 @@
+---
+ - hosts: notes
+   tasks:
+        - dnf:
+                name: '@virtualization'
+                state: present
+
+        - ini_file:
+                path: /etc/sysconfig/libvirt-guests
+                section: null
+                option: ON_SHUTDOWN
+                value: shutdown
+                no_extra_spaces: yes
+
+        - ini_file:
+                path: /etc/sysconfig/libvirt-guests
+                section: null
+                option: PARALLEL_SHUTDOWN
+                value: 4
+                no_extra_spaces: yes
+
+        - ini_file:
+                path: /etc/sysconfig/libvirt-guests
+                section: null
+                option: SHUTDOWN_TIMEOUT
+                value: 60
+                no_extra_spaces: yes
+
+        - systemd:
+                name: libvirt-guests.service
+                enabled: yes

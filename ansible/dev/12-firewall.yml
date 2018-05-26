@@ -1,0 +1,13 @@
+---
+ - hosts: all
+   tasks:
+        - firewalld:
+                zone: internal
+                interface: tun0
+                state: enabled
+                permanent: true
+        - firewalld:
+                zone: internal
+                service: ssh
+                state: enabled
+                permanent: true

@@ -1,0 +1,6 @@
+---
+- hosts: all
+  tasks:
+          - dnf:
+                  name: "*"
+                  state: latest

@@ -1,0 +1,4 @@
+---
+- hosts: all
+  tasks:
+  - shell: plymouth-set-default-theme details --rebuild-initrd

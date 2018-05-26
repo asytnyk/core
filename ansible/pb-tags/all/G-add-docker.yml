@@ -1,0 +1,10 @@
+---
+ - hosts: all
+   tasks:
+        - dnf:
+                name: 'docker'
+                state: present
+
+        - systemd:
+                name: docker.service
+                enabled: yes
